@@ -1,0 +1,213 @@
+/* --- Base Reset --- */
+
+body {
+    display: none;
+}
+
+.nav {
+    display: none;
+}
+
+.box {
+    display: none;
+}
+
+.toollisti {
+    display: none;
+}
+
+.twobox {
+    display: none;
+}
+
+.content {
+    display: none;
+}
+
+@media (max-width:800px) {
+
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+         user-select: none;
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #dee5fb;
+        width: 100%;
+        /* Changed height to min-height to allow scrolling */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow-x: hidden;
+    }
+
+    /* --- Navigation --- */
+    nav {
+
+        width: 100%;
+        height: 80px;
+        background-color: #fff;
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1000;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0px 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        
+
+    }
+
+    .bar img,
+    #info {
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+        padding: 10px;
+    }
+
+    /* --- Main Content Container --- */
+    .content {
+        width: 100%;
+        width: 100%;
+        /* Limits width for a mobile-app feel on desktop */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+        margin-top: 100px;
+        /* Pushes content below the fixed nav */
+        padding-bottom: 120px;
+        /* Space so bottom content isn't hidden by reel */
+    }
+
+    /* --- Hero Box --- */
+    .box {
+        width: 90%;
+        min-height: 180px;
+        /* Using min-height to prevent text overflow */
+        background: linear-gradient(to right, rgb(255, 126, 124), rgb(61, 61, 255));
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+        padding: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .box h5 {
+        font-size: 1.1em;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .box ul {
+        list-style-type: none;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .box ul li {
+        border-left: 3px solid rgba(255, 255, 255, 0.5);
+        padding-left: 10px;
+        font-size: 0.9em;
+    }
+
+    /* --- Tools Section --- */
+    .toollisti {
+        width: 90%;
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .toollisti h4 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+        font-weight: 600;
+        color: #333;
+        border-left: 4px solid rgb(131, 131, 255);
+        padding-left: 10px;
+    }
+
+    .tmain {
+        display: grid;
+        /* Creates a 4-column grid that fits the container perfectly */
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        justify-items: center;
+    }
+
+    .tool {
+        width: 60px;
+        height: 60px;
+        background-color: white;
+        box-shadow: 0 4px 12px rgba(100, 89, 217, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        transition: transform 0.2s;
+    }
+    .tool img{
+        width: 100%;
+        height: 100%;
+        opacity: 0.7;
+        filter: grayscale(100%);
+        transition: transform 0.2s;
+        user-select: none;
+        cursor: pointer;
+    }
+
+    .tool:active {
+        transform: scale(0.9);
+    }
+
+    /* --- Feature Boxes (TwoBox) --- */
+    .twobox {
+        display: flex;
+        width: 90%;
+        gap: 15px;
+        justify-content: space-between;
+    }
+
+    .bo {
+        flex: 1;
+        /* Makes both boxes take up equal width */
+        height: 200px;
+        /* Adjusted height for better balance */
+        border-radius: 15px;
+        background: linear-gradient(to bottom right, rgb(83, 83, 230), wheat);
+    }
+
+    /* --- Bottom Navigation (Reel) --- */
+    .reel {
+        position: fixed;
+        bottom: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 10px 25px;
+        border-radius: 50px;
+        display: flex;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .reel img {
+        height: 45px;
+        width: 45px;
+        cursor: pointer;
+    }
+
+}
