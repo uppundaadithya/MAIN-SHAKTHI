@@ -9,16 +9,31 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the 'front' directory 
-// (This allows the server to find your images/css/js)
+// Serve static files from the 'front' directory
 app.use(express.static(path.join(__dirname, '../front')));
 
-// Basic Route
+// Default route - redirect to login
+app.get('/', (req, res) => {
+    res.redirect('/login.html');
+});
+
+// Server status check
 app.get('/api/status', (req, res) => {
-    res.json({ message: "Server is running smoothly!" });
+    res.json({ message: "SHAKTHI server is running!" });
 });
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Server is sprinting at http://localhost:${PORT}`);
+    console.log('');
+    console.log('╔══════════════════════════════════════════════╗');
+    console.log('║         🛡️  SHAKTHI SERVER STARTED  🛡️        ║');
+    console.log('╠══════════════════════════════════════════════╣');
+    console.log(`║  🌐  App:    http://localhost:${PORT}            ║`);
+    console.log(`║  👤  Login:  http://localhost:${PORT}/login.html  ║`);
+    console.log(`║  🔧  Admin:  http://localhost:${PORT}/admin.html  ║`);
+    console.log('╚══════════════════════════════════════════════╝');
+    console.log('');
+    console.log('  All data flows through Firebase Firestore.');
+    console.log('  This server only serves static files.');
+    console.log('');
 });

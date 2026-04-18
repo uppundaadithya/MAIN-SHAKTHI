@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SHAKTHI Admin Dashboard - Monitor alerts and manage user safety in real-time.">
+    <title>SHAKTHI - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===== Reset & Variables ===== */
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #111128;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-hover: rgba(255, 255, 255, 0.07);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(167, 139, 250, 0.3);
+            --text-primary: #f0edf6;
+            --text-secondary: rgba(240, 237, 246, 0.55);
+            --text-muted: rgba(240, 237, 246, 0.35);
+            --accent-violet: #a78bfa;
+            --accent-pink: #f472b6;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --accent-amber: #fbbf24;
+            --accent-blue: #60a5fa;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-danger: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== Top Nav ===== */
+        .admin-nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            background: rgba(10, 10, 26, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            z-index: 1000;
+        }
+
+        .nav-left {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .nav-left .logo-badge {
+            width: 36px; height: 36px;
+            background: var(--gradient-danger);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+
+        .nav-left h1 {
+            font-size: 1.1rem; font-weight: 800;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--accent-violet), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-left .admin-badge {
+            font-size: 0.65rem;
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--accent-violet);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .nav-right {
+            display: flex; align-items: center; gap: 16px;
+        }
+
+        .live-indicator {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.75rem; color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px; height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .btn-silence {
+            padding: 8px 16px;
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .btn-silence:hover {
+            background: rgba(248, 113, 113, 0.25);
+        }
+
+        .btn-silence.active {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== Main Layout ===== */
+        .admin-main {
+            padding: 84px 28px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ===== Stats Row ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-accent);
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .stat-card .stat-value.violet { color: var(--accent-violet); }
+        .stat-card .stat-value.pink { color: var(--accent-pink); }
+        .stat-card .stat-value.green { color: var(--accent-green); }
+        .stat-card .stat-value.red { color: var(--accent-red); }
+
+        /* ===== Section Title ===== */
+        .section-title {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            margin-bottom: 14px;
+            padding-left: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .count-badge {
+            background: rgba(167, 139, 250, 0.15);
+            color: var(--accent-violet);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+
+        /* ===== Alerts Panel ===== */
+        .alerts-panel {
+            margin-bottom: 32px;
+        }
+
+        .alert-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .alert-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s;
+        }
+
+        .alert-item:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .alert-item.sos {
+            border-left: 3px solid var(--accent-red);
+            background: rgba(248, 113, 113, 0.05);
+        }
+
+        .alert-item.location {
+            border-left: 3px solid var(--accent-amber);
+            background: rgba(251, 191, 36, 0.05);
+        }
+
+        .alert-item.alarm {
+            border-left: 3px solid var(--accent-blue);
+            background: rgba(96, 165, 250, 0.05);
+        }
+
+        .alert-item.call {
+            border-left: 3px solid var(--accent-green);
+            background: rgba(52, 211, 153, 0.05);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-icon {
+            width: 42px; height: 42px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .alert-item.sos .alert-icon { background: rgba(248, 113, 113, 0.15); }
+        .alert-item.location .alert-icon { background: rgba(251, 191, 36, 0.15); }
+        .alert-item.alarm .alert-icon { background: rgba(96, 165, 250, 0.15); }
+        .alert-item.call .alert-icon { background: rgba(52, 211, 153, 0.15); }
+
+        .alert-info { flex: 1; }
+
+        .alert-info .alert-type {
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .alert-item.sos .alert-type { color: var(--accent-red); }
+        .alert-item.location .alert-type { color: var(--accent-amber); }
+        .alert-item.alarm .alert-type { color: var(--accent-blue); }
+        .alert-item.call .alert-type { color: var(--accent-green); }
+
+        .alert-info .alert-user {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .alert-info .alert-details {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .alert-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: right;
+            min-width: 70px;
+            flex-shrink: 0;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-map {
+            padding: 6px 12px;
+            background: rgba(96, 165, 250, 0.12);
+            color: var(--accent-blue);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-map:hover { background: rgba(96, 165, 250, 0.22); }
+
+        /* ===== Users Table ===== */
+        .users-panel {
+            margin-bottom: 32px;
+        }
+
+        .users-table-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead th {
+            text-align: left;
+            padding: 14px 16px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .users-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .users-table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .users-table tbody td {
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .users-table tbody td:first-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* ===== SOS Flash Overlay ===== */
+        .sos-flash {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .sos-flash.active {
+            animation: sosFlash 0.6s ease-in-out infinite;
+            pointer-events: auto;
+        }
+
+        @keyframes sosFlash {
+            0%, 100% { opacity: 0; background: rgba(239, 68, 68, 0.08); }
+            50% { opacity: 1; background: rgba(239, 68, 68, 0.12); }
+        }
+
+        /* ===== SOS Alert Modal ===== */
+        .sos-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(10, 10, 26, 0.85);
+            backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .sos-modal.active {
+            display: flex;
+        }
+
+        .sos-modal-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 36px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .sos-modal-card .sos-icon {
+            width: 72px; height: 72px;
+            background: var(--gradient-danger);
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 30px;
+            margin-bottom: 18px;
+            animation: pulseDanger 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseDanger {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(239, 68, 68, 0); }
+        }
+
+        .sos-modal-card h2 {
+            font-size: 1.4rem;
+            color: var(--accent-red);
+            margin-bottom: 6px;
+            font-weight: 800;
+        }
+
+        .sos-modal-card .sos-user-info {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sos-modal-card .sos-details {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .sos-modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-sos-action {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sos-action.dismiss {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .btn-sos-action.dismiss:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: var(--text-primary);
+        }
+
+        .btn-sos-action.respond {
+            background: var(--gradient-danger);
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-sos-action.respond:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* ===== Empty State ===== */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state .empty-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 0.85rem;
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            .admin-main { padding: 76px 14px 30px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .users-table-wrapper { overflow-x: auto; }
+            .alert-item { flex-wrap: wrap; gap: 10px; }
+            .alert-time { min-width: auto; }
+            .admin-nav { padding: 0 14px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .sos-modal-actions { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SOS Flash Overlay -->
+    <div class="sos-flash" id="sosFlash"></div>
+
+    <!-- SOS Alert Modal -->
+    <div class="sos-modal" id="sosModal">
+        <div class="sos-modal-card">
+            <div class="sos-icon">🚨</div>
+            <h2>EMERGENCY SOS ALERT</h2>
+            <p class="sos-user-info" id="sosUserInfo">User Name</p>
+            <p class="sos-details" id="sosDetails">Loading alert details...</p>
+            <div class="sos-modal-actions">
+                <button class="btn-sos-action dismiss" id="btnDismiss">Dismiss</button>
+                <a class="btn-sos-action respond" id="btnRespond" href="#" target="_blank">📍 View Location</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="admin-nav">
+        <div class="nav-left">
+            <div class="logo-badge">🛡️</div>
+            <h1>SHAKTHI</h1>
+            <span class="admin-badge">Admin</span>
+        </div>
+        <div class="nav-right">
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                LIVE
+            </div>
+            <button class="btn-silence" id="btnSilence">
+                🔇 Silence Siren
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Registered Users</div>
+                <div class="stat-value violet" id="statUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-value red" id="statAlerts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">SOS Triggered</div>
+                <div class="stat-value pink" id="statSOS">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Location Alerts</div>
+                <div class="stat-value green" id="statLocation">0</div>
+            </div>
+        </div>
+
+        <!-- Live Alerts -->
+        <div class="alerts-panel">
+            <div class="section-title">
+                🔔 Live Alerts
+                <span class="count-badge" id="alertCount">0</span>
+            </div>
+            <div class="alert-list" id="alertList">
+                <div class="empty-state" id="emptyAlerts">
+                    <div class="empty-icon">🔕</div>
+                    <p>No active alerts — all clear</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Users -->
+        <div class="users-panel">
+            <div class="section-title">
+                👥 Registered Users
+                <span class="count-badge" id="userCount">0</span>
+            </div>
+            <div class="users-table-wrapper">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Blood Group</th>
+                            <th>Emergency Contact</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr id="noUsersRow">
+                            <td colspan="7" style="text-align:center; color: var(--text-muted); padding: 32px;">
+                                No users registered yet
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
+            authDomain: "project-shakthi.firebaseapp.com",
+            projectId: "project-shakthi",
+            storageBucket: "project-shakthi.firebasestorage.app",
+            messagingSenderId: "250758772501",
+            appId: "1:250758772501:web:c1f294984e143a1f94db1c",
+            measurementId: "G-B9D4WBTEKG"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ===== Siren (Web Audio API) =====
+        let sirenAudio = null;
+        let sirenPlaying = false;
+
+        function createSiren() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            function sirenCycle() {
+                const now = audioCtx.currentTime;
+                oscillator.frequency.linearRampToValueAtTime(1200, now + 0.5);
+                oscillator.frequency.linearRampToValueAtTime(600, now + 1.0);
+            }
+
+            oscillator.start();
+            sirenCycle();
+            const sirenInterval = setInterval(sirenCycle, 1000);
+
+            return {
+                stop: function() {
+                    clearInterval(sirenInterval);
+                    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                    setTimeout(() => {
+                        oscillator.stop();
+                        audioCtx.close();
+                    }, 200);
+                }
+            };
+        }
+
+        function playSiren() {
+            if (sirenPlaying) return;
+            try {
+                sirenAudio = createSiren();
+                sirenPlaying = true;
+                document.getElementById('btnSilence').classList.add('active');
+                document.getElementById('sosFlash').classList.add('active');
+            } catch (e) {
+                console.log('Audio autoplay blocked:', e);
+            }
+        }
+
+        function silenceSiren() {
+            if (sirenAudio) {
+                sirenAudio.stop();
+                sirenAudio = null;
+            }
+            sirenPlaying = false;
+            document.getElementById('btnSilence').classList.remove('active');
+            document.getElementById('sosFlash').classList.remove('active');
+        }
+
+        document.getElementById('btnSilence').addEventListener('click', silenceSiren);
+        document.getElementById('btnDismiss').addEventListener('click', () => {
+            document.getElementById('sosModal').classList.remove('active');
+            silenceSiren();
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        // ===== Track IDs and Initial Load =====
+        let initialLoadComplete = false;
+        const seenAlertIds = new Set();
+
+        // ===== Real-time listener: ALERTS collection =====
+        console.log('Initializing Alerts listener...');
+        const alertsRef = collection(db, 'alerts');
+
+        onSnapshot(alertsRef, (snapshot) => {
+            console.log('Alerts snapshot received! Size:', snapshot.size);
+            const alertList = document.getElementById('alertList');
+            alertList.innerHTML = '';
+
+            let totalAlerts = 0;
+            let sosCount = 0;
+            let locationCount = 0;
+
+            const icons = { sos: '🚨', location: '📍', alarm: '🔔', call: '📞' };
+            const labels = { sos: 'SOS EMERGENCY', location: 'LOCATION SHARED', alarm: 'ALARM TRIGGERED', call: 'EMERGENCY CALL' };
+
+            if (snapshot.empty) {
+                alertList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔕</div>
+                        <p>No active alerts — all clear</p>
+                    </div>`;
+            }
+
+            // Convert to array and sort by timestamp locally to avoid index issues
+            const docs = [];
+            snapshot.forEach(doc => docs.push({ id: doc.id, ...doc.data() }));
+            docs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            docs.forEach((alert) => {
+                totalAlerts++;
+                if (alert.type === 'sos') sosCount++;
+                if (alert.type === 'location') locationCount++;
+
+                const timeStr = new Date(alert.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+                let locationBtn = '';
+                if (alert.latitude && alert.longitude) {
+                    const mapUrl = `https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`;
+                    locationBtn = `<div class="alert-actions"><a class="btn-map" href="${mapUrl}" target="_blank">📍 Map</a></div>`;
+                }
+
+                const div = document.createElement('div');
+                div.className = `alert-item ${alert.type || 'sos'}`;
+                div.innerHTML = `
+                    <div class="alert-icon">${icons[alert.type] || '⚠️'}</div>
+                    <div class="alert-info">
+                        <div class="alert-type">${labels[alert.type] || 'ALERT'}</div>
+                        <div class="alert-user">${escapeHtml(alert.userName)}</div>
+                        <div class="alert-details">📱 ${escapeHtml(alert.userPhone)} · ${escapeHtml(alert.message)}</div>
+                    </div>
+                    <div class="alert-time">${timeStr}</div>
+                    ${locationBtn}
+                `;
+                alertList.appendChild(div);
+
+                if (initialLoadComplete && !seenAlertIds.has(alert.id)) {
+                    // Play siren for ANY user interaction (SOS, Call, Alarm, etc.)
+                    playSiren();
+                    showSOSModal(alert);
+                }
+                seenAlertIds.add(alert.id);
+            });
+
+            initialLoadComplete = true;
+            document.getElementById('statAlerts').textContent = totalAlerts;
+            document.getElementById('statSOS').textContent = sosCount;
+            document.getElementById('statLocation').textContent = locationCount;
+            document.getElementById('alertCount').textContent = totalAlerts;
+        }, (error) => {
+            console.error('Alerts listener error:', error);
+            alert('Firestore Error: ' + error.message);
+        });
+
+        // ===== Real-time listener: USERS collection =====
+        console.log('Initializing Users listener...');
+        const usersRef = collection(db, 'users');
+
+        onSnapshot(usersRef, (snapshot) => {
+            console.log('Users snapshot received! Size:', snapshot.size);
+            const tbody = document.getElementById('usersBody');
+            tbody.innerHTML = '';
+
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted); padding: 32px;">No users registered yet</td></tr>`;
+            }
+
+            snapshot.forEach((doc) => {
+                const user = doc.data();
+                const date = new Date(user.registeredAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${escapeHtml(user.fullName)}</td>
+                    <td>${escapeHtml(user.phone)}</td>
+                    <td>${user.age || '—'}</td>
+                    <td>${escapeHtml(user.gender || '—')}</td>
+                    <td>${escapeHtml(user.bloodGroup || '—')}</td>
+                    <td>${escapeHtml(user.emergencyContact || '—')}</td>
+                    <td>${date}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('statUsers').textContent = snapshot.size;
+            document.getElementById('userCount').textContent = snapshot.size;
+        }, (error) => {
+            console.error('Users listener error:', error);
+        });
+
+        function showSOSModal(alert) {
+            document.getElementById('sosUserInfo').textContent = alert.userName || 'Unknown User';
+            let details = `📱 Phone: ${alert.userPhone || 'N/A'}\n⏰ Time: ${new Date(alert.timestamp).toLocaleString('en-IN')}\n💬 ${alert.message}`;
+            document.getElementById('sosDetails').textContent = details;
+            if (alert.latitude && alert.longitude) {
+                document.getElementById('btnRespond').href = `https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`;
+                document.getElementById('btnRespond').style.display = 'inline-flex';
+            } else {
+                document.getElementById('btnRespond').style.display = 'none';
+            }
+            document.getElementById('sosModal').classList.add('active');
+        }
+    </script>
+
+</body>
+
+</html>
