@@ -4,83 +4,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./user/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=BBH+Bartle&family=Pirata+One&family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&display=swap"
         rel="stylesheet">
     <title>SHAKTHI</title>
 </head>
 
 <body>
-    <nav>
-        <div class="bar ">
-            <img src="open-menu.png" alt="">
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+    <div class="profile-overlay" id="profileOverlay"></div>
+
+    <aside class="profile-panel" id="profilePanel" aria-hidden="true">
+        <div class="profile-top">
+            <h2>Profile</h2>
+            <button class="close-profile" id="closeProfile" type="button" aria-label="Close profile">&times;</button>
         </div>
-        <div class="name color">
+
+        <div class="profile-card">
+            <div class="avatar" id="profileAvatar">S</div>
+            <h3 id="profileName">Shakthi User</h3>
+            <p id="profileEmail">yourmail@example.com</p>
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat">
+                <span>Phone</span>
+                <strong id="profilePhone">Not added</strong>
+            </div>
+            <div class="stat">
+                <span>Blood</span>
+                <strong id="profileBlood">Not added</strong>
+            </div>
+        </div>
+
+        <div class="profile-details">
+            <div class="detail-row">
+                <span>Emergency Contact</span>
+                <strong id="profileEmergency">Not added</strong>
+            </div>
+            <div class="detail-row">
+                <span>Address</span>
+                <strong id="profileAddress">Not added</strong>
+            </div>
+            <div class="detail-row">
+                <span>Age / Gender</span>
+                <strong id="profileMeta">Not added</strong>
+            </div>
+        </div>
+    </aside>
+
+    <nav>
+        <button class="nav-btn" type="button" id="menuBtn" aria-label="Open profile menu">
+            <img src="./assets/open-menu.png" alt="Menu">
+        </button>
+        <div class="name">
+            <p>Safety Dashboard</p>
             <h1>SHAKTHI</h1>
         </div>
-        <div class="information">
-            <img id="info" src="info.png" alt="">
-        </div>
+        <button class="nav-btn" type="button" id="info" aria-label="Information">
+            <img src="./assets/info.png" alt="Info">
+        </button>
     </nav>
 
+    <main class="page-shell">
+        <div class="content">
+            <section class="box">
+                <span class="eyebrow">Safety in Every Step</span>
+                <ul>
+                    <li>One app for all emergency needs.</li>
+                    <li>Reach nearby women and trusted contacts quickly.</li>
+                    <li>Share location instantly in risky situations.</li>
+                    <li>Connect with emergency support without delay.</li>
+                </ul>
+            </section>
 
-    <div class="content">
-        <div class="box">
-            <h5> Shakthi - Safty In Every Step </h5>
-            <ul>
-                <li>One App For All Emergency Needs</li>
-                <li>Connect With Near By Womens</li>
-                <li>Stay Alert in anonmus location</li>
-                <li>Connect With Cop</li>
-            </ul>
+            <section class="toollisti" id="safetyTools">
+                <div class="section-head">
+                    <div>
+                        <h4>Safety Tools</h4>
+                        <p>Tap any shortcut to take action right away.</p>
+                    </div>
+                </div>
+                <div class="tmain">
+                    <button class="tool" id="sosTrigger" type="button">
+                        <img src="./assets/sos.png" alt="SOS">
+                        <span>SOS</span>
+                    </button>
+                    <button class="tool location" id="location" type="button">
+                        <img src="./assets/location.png" alt="Location">
+                        <span>Location</span>
+                    </button>
+                    <button class="tool alram" id="alarmTrigger" type="button">
+                        <img src="./assets/alarm.png" alt="Alarm">
+                        <span>Alarm</span>
+                    </button>
+                    <button class="tool" id="emergencyBtn" data-number="123" type="button">
+                        <img src="./assets/call.png" alt="Call">
+                        <span>Call</span>
+                    </button>
+                    <div class="tool empty">
+                        <span>Nearby Help</span>
+                    </div>
+                    <div class="tool empty">
+                        <span>Safe Route</span>
+                    </div>
+                    <div class="tool empty">
+                        <span>Guardians</span>
+                    </div>
+                    <div class="tool empty">
+                        <span>Police</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="twobox">
+                <article class="b1 bo">
+                    <span class="card-tag">Live Status</span>
+                    <h3>Stay ready before an emergency happens.</h3>
+                    <p>Keep your profile updated so alerts reach the right people with the right details.</p>
+                </article>
+                <article class="b2 bo">
+                    <span class="card-tag">Quick Tip</span>
+                    <h3>One tap should be enough when time matters.</h3>
+                    <p>Use the menu icon to open your profile and review your emergency information any time.</p>
+                </article>
+            </section>
         </div>
-        <div class="toollisti">
-            <h4>Tools </h4>
-            <div class="tmain">
-                <div class="tool" id="sosTrigger">
-                    <img src="assets/sos.png" alt="SOS">
-                </div>
-                <div class="tool location " id="location">
-                    <img src="assets/location.png" alt="">
-                </div>
-                <div class="tool alram" id="alarmTrigger">
-                    <img src="assets/alarm.png" alt="">
+    </main>
 
-                </div>
-                <div class="tool" id="emergencyBtn" data-number="123">
-                    <img src="assets/call.png" alt="">
-                </div>
-                <div class="tool">
-
-                </div>
-                <div class="tool">
-
-                </div>
-                <div class="tool">
-
-                </div>
-                <div class="tool">
-
-                </div>
-            </div>
+    <button class="reel shortcut-panel" id="emergencyShortcut" type="button">
+        <div>
+            <strong>Emergency panel ready</strong>
+            <p>Tap here to jump to your shortcuts.</p>
         </div>
-        <div class="twobox">
-            <div class="b1 bo">
+        <img src="./assets/content.png" alt="Content">
+    </button>
 
-            </div>
-            <div class="b2 bo">
-
-            </div>
-        </div>
-    </div>
-    <div class="reel">
-        <img src="content.png" alt="">
-    </div>
-
-    <script type="module" src="script.js"></script>
+    <script type="module" src="./user/script.js"></script>
 </body>
 
 </html>

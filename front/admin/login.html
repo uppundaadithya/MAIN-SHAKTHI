@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SHAKTHI Admin Login">
+    <title>SHAKTHI - Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+    <main class="admin-login-shell">
+        <section class="admin-login-card">
+            <div class="admin-login-head">
+                <div class="admin-logo">🛡️</div>
+                <p class="admin-eyebrow">Secure Access</p>
+                <h1>SHAKTHI Admin</h1>
+                <p class="admin-copy">Sign in to view live alerts and monitor registered users.</p>
+            </div>
+
+            <form id="adminLoginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="adminUsername">Username</label>
+                    <input type="text" id="adminUsername" placeholder="Enter admin username" required>
+                    <span class="error-msg">Username is required</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password" required>
+                    <span class="error-msg">Password is required</span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="adminLoginBtn">Login to Dashboard</button>
+            </form>
+
+            <p class="admin-hint">Default credentials can be changed in <code>front/admin/login.js</code>.</p>
+        </section>
+    </main>
+
+    <script type="module" src="login.js"></script>
+</body>
+
+</html>

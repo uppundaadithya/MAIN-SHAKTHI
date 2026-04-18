@@ -14,11 +14,10 @@
 </head>
 
 <body>
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
 
-    <!-- SOS Flash Overlay -->
     <div class="sos-flash" id="sosFlash"></div>
 
-    <!-- SOS Alert Modal -->
     <div class="sos-modal" id="sosModal">
         <div class="sos-modal-card">
             <div class="sos-icon">🚨</div>
@@ -32,7 +31,6 @@
         </div>
     </div>
 
-    <!-- Navigation -->
     <nav class="admin-nav">
         <div class="nav-left">
             <div class="logo-badge">🛡️</div>
@@ -44,16 +42,12 @@
                 <span class="live-dot"></span>
                 LIVE
             </div>
-            <button class="btn-silence" id="btnSilence">
-                🔇 Silence Siren
-            </button>
+            <button class="btn-admin-logout" id="btnAdminLogout">Logout</button>
+            <button class="btn-silence" id="btnSilence">🔇 Silence Siren</button>
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="admin-main">
-
-        <!-- Stats -->
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-label">Registered Users</div>
@@ -73,7 +67,6 @@
             </div>
         </div>
 
-        <!-- Live Alerts -->
         <div class="alerts-panel">
             <div class="section-title">
                 🔔 Live Alerts
@@ -82,12 +75,11 @@
             <div class="alert-list" id="alertList">
                 <div class="empty-state" id="emptyAlerts">
                     <div class="empty-icon">🔕</div>
-                    <p>No active alerts — all clear</p>
+                    <p>No active alerts - all clear</p>
                 </div>
             </div>
         </div>
 
-        <!-- Registered Users -->
         <div class="users-panel">
             <div class="section-title">
                 👥 Registered Users
@@ -116,12 +108,9 @@
                 </table>
             </div>
         </div>
-
     </main>
 
-    <!-- Firebase SDK & Logic -->
     <script type="module" src="admin.js"></script>
-
 </body>
 
 </html>

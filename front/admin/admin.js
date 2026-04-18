@@ -1,6 +1,13 @@
 /* ===== SHAKTHI ADMIN - JS ===== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const ADMIN_SESSION_KEY = "shakthi_admin_logged_in";
+const ADMIN_USER_KEY = "shakthi_admin_user";
+
+if (localStorage.getItem(ADMIN_SESSION_KEY) !== "true") {
+    window.location.href = "/admin/login.html";
+}
 
 const firebaseConfig = {
     apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
@@ -94,10 +101,31 @@ function escapeHtml(text) {
 // ===== Track IDs and Initial Load =====
 let initialLoadComplete = false;
 const seenAlertIds = new Set();
+const toastStack = document.getElementById('toastStack');
+const logoutBtn = document.getElementById('btnAdminLogout');
+
+function showToast(title, message, tone = 'info') {
+    if (!toastStack) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${tone}`;
+    toast.innerHTML = `<strong>${escapeHtml(title)}</strong><p>${escapeHtml(message)}</p>`;
+    toastStack.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3200);
+}
+
+logoutBtn?.addEventListener('click', () => {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    localStorage.removeItem(ADMIN_USER_KEY);
+    window.location.href = "/admin/login.html";
+});
 
 // ===== Real-time listener: ALERTS collection =====
 console.log('Initializing Alerts listener...');
-const alertsRef = collection(db, 'alerts');
+const alertsRef = query(collection(db, 'alerts'), where('confirmedFromApp', '==', true));
 
 onSnapshot(alertsRef, (snapshot) => {
     console.log('Alerts snapshot received! Size:', snapshot.size);
@@ -145,6 +173,7 @@ onSnapshot(alertsRef, (snapshot) => {
                 <div class="alert-type">${labels[alert.type] || 'ALERT'}</div>
                 <div class="alert-user">${escapeHtml(alert.userName)}</div>
                 <div class="alert-details">📱 ${escapeHtml(alert.userPhone)} · ${escapeHtml(alert.message)}</div>
+                <div class="alert-details">✅ Source: ${escapeHtml(alert.sourceLabel || 'SHAKTHI App')}</div>
             </div>
             <div class="alert-time">${timeStr}</div>
             ${locationBtn}
@@ -154,6 +183,11 @@ onSnapshot(alertsRef, (snapshot) => {
         if (initialLoadComplete && !seenAlertIds.has(alert.id)) {
             playSiren();
             showSOSModal(alert);
+            showToast(
+                'New App Alert',
+                `${alert.userName || 'Unknown user'} sent a confirmed notification from SHAKTHI App only.`,
+                alert.type === 'sos' ? 'error' : 'info'
+            );
         }
         seenAlertIds.add(alert.id);
     });
@@ -165,6 +199,7 @@ onSnapshot(alertsRef, (snapshot) => {
     document.getElementById('alertCount').textContent = totalAlerts;
 }, (error) => {
     console.error('Alerts listener error:', error);
+    showToast('Alert Sync Error', 'The admin panel could not read confirmed app alerts.', 'error');
 });
 
 // ===== Real-time listener: USERS collection =====
@@ -201,6 +236,7 @@ onSnapshot(usersRef, (snapshot) => {
     document.getElementById('userCount').textContent = snapshot.size;
 }, (error) => {
     console.error('Users listener error:', error);
+    showToast('User Sync Error', 'The admin panel could not refresh the users list.', 'error');
 });
 
 function showSOSModal(alert) {
@@ -210,7 +246,7 @@ function showSOSModal(alert) {
     const modal = document.getElementById('sosModal');
 
     if (userDisplay) userDisplay.textContent = alert.userName || 'Unknown User';
-    let details = `📱 Phone: ${alert.userPhone || 'N/A'}\n⏰ Time: ${new Date(alert.timestamp).toLocaleString('en-IN')}\n💬 ${alert.message}`;
+    let details = `📱 Phone: ${alert.userPhone || 'N/A'}\n⏰ Time: ${new Date(alert.timestamp).toLocaleString('en-IN')}\n✅ Source: ${alert.sourceLabel || 'SHAKTHI App'}\n💬 ${alert.message}`;
     if (detailsDisplay) detailsDisplay.textContent = details;
     
     if (respondBtn) {

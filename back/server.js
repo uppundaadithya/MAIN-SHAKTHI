@@ -12,9 +12,19 @@ app.use(express.json());
 // Serve static files from the 'front' directory
 app.use(express.static(path.join(__dirname, '../front')));
 
-// Default route - redirect to login
+// Default route - open app shell first
 app.get('/', (req, res) => {
-    res.redirect('/login.html');
+    res.redirect('/index.html');
+});
+
+// Backward-compatible login path
+app.get('/login.html', (req, res) => {
+    res.redirect('/login/login.html');
+});
+
+// Admin entry path
+app.get('/admin.html', (req, res) => {
+    res.redirect('/admin/login.html');
 });
 
 // Server status check
@@ -29,8 +39,8 @@ app.listen(PORT, () => {
     console.log('║         🛡️  SHAKTHI SERVER STARTED  🛡️        ║');
     console.log('╠══════════════════════════════════════════════╣');
     console.log(`║  🌐  App:    http://localhost:${PORT}            ║`);
-    console.log(`║  👤  Login:  http://localhost:${PORT}/login.html  ║`);
-    console.log(`║  🔧  Admin:  http://localhost:${PORT}/admin.html  ║`);
+    console.log(`║  👤  Login:  http://localhost:${PORT}/login/login.html  ║`);
+    console.log(`║  🔧  Admin:  http://localhost:${PORT}/admin/login.html  ║`);
     console.log('╚══════════════════════════════════════════════╝');
     console.log('');
     console.log('  All data flows through Firebase Firestore.');

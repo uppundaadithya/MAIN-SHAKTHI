@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SHAKTHI - Safety In Every Step. Register to stay protected with one-tap emergency alerts.">
-    <title>SHAKTHI - Register</title>
+    <meta name="description" content="SHAKTHI - Safety In Every Step. Register new users or log in existing users.">
+    <title>SHAKTHI - Access</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,26 +13,45 @@
 </head>
 
 <body>
-
-    <!-- Success Overlay -->
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
     <div class="success-overlay" id="successOverlay">
         <div class="success-card">
             <div class="check-icon">✓</div>
-            <h2>Registration Complete!</h2>
-            <p>Redirecting to SHAKTHI dashboard...</p>
+            <h2 id="successTitle">Welcome!</h2>
+            <p id="successText">Redirecting to SHAKTHI dashboard...</p>
         </div>
     </div>
 
     <div class="login-container">
         <div class="login-header">
-            <div class="logo-icon">🛡️</div>
             <h1>SHAKTHI</h1>
-            <p>Safety In Every Step — Register Now</p>
+            <p>Safety In Every Step</p>
         </div>
 
         <div class="login-card">
-            <form id="registrationForm" autocomplete="off">
+            <div class="mode-switch">
+                <button type="button" class="mode-btn active" id="showLogin">Login</button>
+                <button type="button" class="mode-btn" id="showRegister">Register</button>
+            </div>
 
+            <div class="mode-copy">
+                <h2 id="modeTitle">Welcome back</h2>
+                <p id="modeText">Already registered? Enter your phone number and continue.</p>
+            </div>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="loginPhone">Phone Number</label>
+                    <input type="tel" id="loginPhone" placeholder="+91 XXXXXXXXXX" required>
+                    <span class="error-msg">Enter your registered phone number</span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnLogin">
+                    Login & Continue ->
+                </button>
+            </form>
+
+            <form id="registrationForm" autocomplete="off" class="hidden-form">
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" placeholder="Enter your full name" required>
@@ -97,16 +116,13 @@
                 </div>
 
                 <button type="submit" class="btn-submit" id="btnSubmit">
-                    Register & Continue →
+                    Register & Continue ->
                 </button>
-
             </form>
         </div>
     </div>
 
-    <!-- Firebase SDK & Logic -->
     <script type="module" src="login.js"></script>
-
 </body>
 
 </html>
