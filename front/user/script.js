@@ -105,29 +105,28 @@ function updateProfileUI(user) {
 
 async function loadUserProfile() {
     try {
+        console.log('🔥 Firebase: Loading user profile for ID:', userId);
         const userRef = doc(db, "users", userId);
         const userSnap = await getDoc(userRef);
 
         if (!userSnap.exists()) {
+            console.warn('🔥 Firebase: User document not found:', userId);
             showToast("Profile Missing", "This user profile was not found in Firebase.", "error");
-            setTimeout(() => {
-                redirectToLogin();
-            }, 600);
+            setTimeout(() => redirectToLogin(), 600);
             return;
         }
 
-        currentUser = {
-            id: userSnap.id,
-            ...userSnap.data()
-        };
-
+        currentUser = { id: userSnap.id, ...userSnap.data() };
+        console.log('✅ Firebase: User profile loaded:', currentUser.fullName);
         updateProfileUI(currentUser);
     } catch (error) {
-        console.error("Failed to load user profile:", error);
-        showToast("Firebase Error", "Could not load your profile .", "error");
-        setTimeout(() => {
-            redirectToLogin();
-        }, 800);
+        console.error('❌ Firebase ERROR (loadUserProfile):', error.code, error.message);
+        if (error.code === 'permission-denied') {
+            showToast("Access Denied", "Firebase rules block this read. Check console.", "error");
+        } else {
+            showToast("Firebase Load Failed", error.message, "error");
+        }
+        setTimeout(() => redirectToLogin(), 800);
     }
 }
 
@@ -258,7 +257,7 @@ async function sendAlert(type, extraData = {}) {
 
     if (!currentUser) {
         showToast("Profile Required", "User data is not available from Firebase yet.", "error");
-        return;
+        return false;
     }
 
     let locationData = { latitude: null, longitude: null };
@@ -267,8 +266,11 @@ async function sendAlert(type, extraData = {}) {
         const position = await new Promise((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
         });
-        locationData.latitude = position.coords.latitude;
-        locationData.longitude = position.coords.longitude;
+        locationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+        };
     } catch (err) {
         console.warn("Could not fetch location for alert:", err.message);
     }
@@ -276,17 +278,12 @@ async function sendAlert(type, extraData = {}) {
     const alertData = {
         type,
         userId: currentUser.id || userId,
-        source: "user-app",
-        sourceLabel: "SHAKTHI App",
+        source: "user-app", 
+        sourceLabel: "SHAKTHI App (Vercel)",
         confirmedFromApp: true,
         userName: currentUser.fullName || "Unknown",
         userPhone: currentUser.phone || "N/A",
-        userEmail: currentUser.email || "",
-        emergencyContact: currentUser.emergencyContact || "",
-        bloodGroup: currentUser.bloodGroup || "",
-        address: currentUser.address || "",
-        age: currentUser.age || "",
-        gender: currentUser.gender || "",
+        ...currentUser,
         timestamp: new Date().toISOString(),
         resolved: false,
         ...locationData,
@@ -294,15 +291,44 @@ async function sendAlert(type, extraData = {}) {
     };
 
     try {
+        console.log('🔥 Firebase: Sending', type, 'alert');
         await addDoc(collection(db, "alerts"), alertData);
-        console.log(`${type.toUpperCase()} alert sent to Firestore successfully`);
+        console.log('✅ Firebase: Alert sent successfully');
         return true;
     } catch (err) {
-        console.error("Failed to send alert to Firestore:", err);
-        showToast("Alert Failed", "The app could not send this notification to Firebase.", "error");
+        console.error('❌ Firebase ERROR (sendAlert):', err.code, err.message);
+        if (err.code === 'permission-denied') {
+            showToast("Write Blocked", "Firebase rules deny alert writes. Check Rules tab.", "error");
+        } else {
+            showToast("Send Failed", `Error: ${err.message}`, "error");
+        }
         return false;
     }
 }
+
+// New: Send Twilio SMS via Vercel API
+async function sendTwilioSOS(lat, lon) {
+    try {
+        const response = await fetch('/api/send-sos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat, lon })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Twilio SMS sent via Vercel API');
+        return result.success;
+    } catch (error) {
+        console.error('❌ Twilio API failed:', error);
+        showToast("SMS Failed", "SMS backup not sent", "warning");
+        return false;
+    }
+}
+
 
 document.querySelectorAll(".tool").forEach((tool, index) => {
     if (tool.classList.contains("empty")) {
@@ -315,10 +341,36 @@ document.querySelectorAll(".tool").forEach((tool, index) => {
     tool.addEventListener("click", async () => {
         const toolId = tool.id || `tool-${index + 1}`;
 
-        if (toolId === "sosTrigger") {
-            const sent = await sendAlert("sos", { message: "EMERGENCY: SOS triggered from app home" });
-            if (sent) {
-                showToast("SOS Sent", "Confirmed from SHAKTHI App only. Help is on the way.", "success");
+if (toolId === "sosTrigger") {
+            // Get location first for SOS
+            let sosLocation = { latitude: null, longitude: null };
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
+                });
+                sosLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+            } catch (err) {
+                console.warn("SOS location unavailable:", err.message);
+            }
+
+            showToast("🚨 EMERGENCY SOS", "Sending alert + SMS...", "error");
+            
+            const sentFirebase = await sendAlert("sos", { 
+                message: "🚨 CRITICAL SOS - Location + SMS sent via SHAKTHI App" 
+            });
+            
+            let sentSMS = false;
+            if (sosLocation.latitude && sosLocation.longitude) {
+                sentSMS = await sendTwilioSOS(sosLocation.latitude, sosLocation.longitude);
+            }
+            
+            if (sentFirebase || sentSMS) {
+                showToast("✅ SOS CONFIRMED", "Firebase alert + SMS backup sent!", "success");
+            } else {
+                showToast("❌ SOS Failed", "Check internet + location permission", "error");
             }
         } else if (toolId === "liveMapTool") {
             await startLiveLocationTracking();

@@ -1,5 +1,6 @@
-// You will need to install twilio: npm install twilio
-const twilio = require('twilio');
+// Vercel Serverless Function - Twilio SMS
+// Set TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE in Vercel env vars
+import twilio from 'twilio';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

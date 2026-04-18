@@ -49,7 +49,7 @@ app.get('/api/status', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+module.exports = app.listen(PORT, () => {
     console.log('');
     console.log('╔══════════════════════════════════════════════╗');
     console.log('║         🛡️  SHAKTHI SERVER STARTED  🛡️        ║');
