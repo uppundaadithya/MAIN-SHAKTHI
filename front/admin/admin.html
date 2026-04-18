@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SHAKTHI Admin Dashboard - Monitor alerts and manage user safety in real-time.">
+    <title>SHAKTHI - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <!-- SOS Flash Overlay -->
+    <div class="sos-flash" id="sosFlash"></div>
+
+    <!-- SOS Alert Modal -->
+    <div class="sos-modal" id="sosModal">
+        <div class="sos-modal-card">
+            <div class="sos-icon">🚨</div>
+            <h2>EMERGENCY SOS ALERT</h2>
+            <p class="sos-user-info" id="sosUserInfo">User Name</p>
+            <p class="sos-details" id="sosDetails">Loading alert details...</p>
+            <div class="sos-modal-actions">
+                <button class="btn-sos-action dismiss" id="btnDismiss">Dismiss</button>
+                <a class="btn-sos-action respond" id="btnRespond" href="#" target="_blank">📍 View Location</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="admin-nav">
+        <div class="nav-left">
+            <div class="logo-badge">🛡️</div>
+            <h1>SHAKTHI</h1>
+            <span class="admin-badge">Admin</span>
+        </div>
+        <div class="nav-right">
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                LIVE
+            </div>
+            <button class="btn-silence" id="btnSilence">
+                🔇 Silence Siren
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">Registered Users</div>
+                <div class="stat-value violet" id="statUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Active Alerts</div>
+                <div class="stat-value red" id="statAlerts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">SOS Triggered</div>
+                <div class="stat-value pink" id="statSOS">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Location Alerts</div>
+                <div class="stat-value green" id="statLocation">0</div>
+            </div>
+        </div>
+
+        <!-- Live Alerts -->
+        <div class="alerts-panel">
+            <div class="section-title">
+                🔔 Live Alerts
+                <span class="count-badge" id="alertCount">0</span>
+            </div>
+            <div class="alert-list" id="alertList">
+                <div class="empty-state" id="emptyAlerts">
+                    <div class="empty-icon">🔕</div>
+                    <p>No active alerts — all clear</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Users -->
+        <div class="users-panel">
+            <div class="section-title">
+                👥 Registered Users
+                <span class="count-badge" id="userCount">0</span>
+            </div>
+            <div class="users-table-wrapper">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Blood Group</th>
+                            <th>Emergency Contact</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr id="noUsersRow">
+                            <td colspan="7" style="text-align:center; color: var(--text-muted); padding: 32px;">
+                                No users registered yet
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Firebase SDK & Logic -->
+    <script type="module" src="admin.js"></script>
+
+</body>
+
+</html>
