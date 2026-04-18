@@ -20,7 +20,7 @@ const userId = params.get("userId") || localStorage.getItem("shakthi_user_id");
 function redirectToLogin() {
     localStorage.removeItem("shakthi_user_id");
     localStorage.removeItem("shakthi_logged_in");
-    window.location.href = "/login/login.html";
+    window.location.href = "/login.html";
 }
 
 if (!userId) {
@@ -31,15 +31,24 @@ localStorage.setItem("shakthi_user_id", userId);
 localStorage.setItem("shakthi_logged_in", "true");
 
 let currentUser = null;
+let liveLocationWatcherId = null;
+let latestLiveCoords = null;
 
 const menuBtn = document.getElementById("menuBtn");
 const infoBtn = document.getElementById("info");
 const closeProfileBtn = document.getElementById("closeProfile");
 const profileOverlay = document.getElementById("profileOverlay");
 const profilePanel = document.getElementById("profilePanel");
+const mapOverlay = document.getElementById("mapOverlay");
+const liveMapPanel = document.getElementById("liveMapPanel");
+const closeLiveMapBtn = document.getElementById("closeLiveMap");
+const liveMapFrame = document.getElementById("liveMapFrame");
+const liveMapStatus = document.getElementById("liveMapStatus");
 const toastStack = document.getElementById("toastStack");
 const emergencyShortcut = document.getElementById("emergencyShortcut");
 const safetyTools = document.getElementById("safetyTools");
+const liveMapTool = document.getElementById("liveMapTool");
+const logoutBtn = document.getElementById("logoutBtn");
 
 function showToast(title, message, tone = "info") {
     if (!toastStack) {
@@ -115,7 +124,7 @@ async function loadUserProfile() {
         updateProfileUI(currentUser);
     } catch (error) {
         console.error("Failed to load user profile:", error);
-        showToast("Firebase Error", "Could not load your profile from Firebase.", "error");
+        showToast("Firebase Error", "Could not load your profile .", "error");
         setTimeout(() => {
             redirectToLogin();
         }, 800);
@@ -158,6 +167,88 @@ emergencyShortcut?.addEventListener("click", () => {
     setTimeout(() => {
         safetyTools.classList.remove("shortcut-focus");
     }, 1100);
+});
+
+function openLiveMapPanel(latitude, longitude, accuracy = null) {
+    if (liveMapFrame) {
+        liveMapFrame.src = `https://www.google.com/maps?q=${latitude},${longitude}&z=17&output=embed`;
+    }
+
+    if (liveMapStatus) {
+        const accuracyText = accuracy ? ` Accuracy: about ${Math.round(accuracy)} meters.` : "";
+        liveMapStatus.textContent = `Showing your exact live location inside SHAKTHI.${accuracyText}`;
+    }
+
+    document.body.classList.add("map-open");
+    liveMapPanel?.setAttribute("aria-hidden", "false");
+}
+
+function closeLiveMapPanel() {
+    document.body.classList.remove("map-open");
+    liveMapPanel?.setAttribute("aria-hidden", "true");
+}
+
+async function startLiveLocationTracking() {
+    if (!("geolocation" in navigator)) {
+        showToast("Live Map Unavailable", "This device does not support live location.", "error");
+        return;
+    }
+
+    if (latestLiveCoords) {
+        openLiveMapPanel(latestLiveCoords.latitude, latestLiveCoords.longitude, latestLiveCoords.accuracy);
+        showToast("Live Map Opened", "Showing your exact live location inside the app.", "success");
+        return;
+    }
+
+    if (liveLocationWatcherId !== null) {
+        showToast("Live Tracking Active", "Waiting for your current location update.", "info");
+        return;
+    }
+
+    showToast("Starting Live Map", "Fetching your live location from the app.", "info");
+
+    liveLocationWatcherId = navigator.geolocation.watchPosition(
+        async (position) => {
+            latestLiveCoords = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+
+            openLiveMapPanel(latestLiveCoords.latitude, latestLiveCoords.longitude, latestLiveCoords.accuracy);
+            showToast("Live Map Ready", "Your exact live location is now open inside SHAKTHI.", "success");
+
+            if (liveLocationWatcherId !== null) {
+                navigator.geolocation.clearWatch(liveLocationWatcherId);
+                liveLocationWatcherId = null;
+            }
+        },
+        (error) => {
+            console.error("Live map location error:", error);
+            showToast("Live Map Failed", "Allow location permission to open the live map.", "error");
+
+            if (liveLocationWatcherId !== null) {
+                navigator.geolocation.clearWatch(liveLocationWatcherId);
+                liveLocationWatcherId = null;
+            }
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 10000
+        }
+    );
+}
+
+closeLiveMapBtn?.addEventListener("click", closeLiveMapPanel);
+mapOverlay?.addEventListener("click", closeLiveMapPanel);
+
+logoutBtn?.addEventListener("click", () => {
+    closeProfile();
+    showToast("Logged Out", "Your SHAKTHI session has been cleared.", "info");
+    setTimeout(() => {
+        redirectToLogin();
+    }, 300);
 });
 
 async function sendAlert(type, extraData = {}) {
@@ -229,10 +320,17 @@ document.querySelectorAll(".tool").forEach((tool, index) => {
             if (sent) {
                 showToast("SOS Sent", "Confirmed from SHAKTHI App only. Help is on the way.", "success");
             }
+        } else if (toolId === "liveMapTool") {
+            await startLiveLocationTracking();
         } else if (toolId === "location") {
-            const sent = await sendAlert("location", { message: "Location manual share" });
+            const dangerMessage = `ALERT! ${currentUser?.fullName || "User"} IN DANGER`;
+            const sent = await sendAlert("location", {
+                message: dangerMessage,
+                dangerAlert: true,
+                targetAgency: "admin"
+            });
             if (sent) {
-                showToast("Location Shared", "Confirmed from SHAKTHI App only and shared with admin.", "success");
+                showToast("Danger Alert Sent", "Your location and danger alert were shared with admin.", "success");
             }
         } else if (toolId === "alarmTrigger") {
             playAlarmLocally();

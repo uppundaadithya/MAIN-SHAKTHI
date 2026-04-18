@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SHAKTHI - Safety In Every Step. Register new users or log in existing users.">
+    <title>SHAKTHI - Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./login/login.css">
+</head>
+
+<body>
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-card">
+            <div class="check-icon">✓</div>
+            <h2 id="successTitle">Welcome!</h2>
+            <p id="successText">Redirecting to SHAKTHI dashboard...</p>
+        </div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-icon">🛡️</div>
+            <h1>SHAKTHI</h1>
+            <p>Safety In Every Step</p>
+        </div>
+
+        <div class="login-card">
+            <div class="mode-switch">
+                <button type="button" class="mode-btn active" id="showLogin">Login</button>
+                <button type="button" class="mode-btn" id="showRegister">Register</button>
+            </div>
+
+            <div class="mode-copy">
+                <h2 id="modeTitle">Welcome back</h2>
+                <p id="modeText">Already registered? Enter your phone number and continue.</p>
+            </div>
+
+            <form id="loginForm" autocomplete="off">
+                <div class="form-group">
+                    <label for="loginPhone">Phone Number</label>
+                    <input type="tel" id="loginPhone" placeholder="+91 XXXXXXXXXX" required>
+                    <span class="error-msg">Enter your registered phone number</span>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnLogin">
+                    Login & Continue ->
+                </button>
+            </form>
+
+            <form id="registrationForm" autocomplete="off" class="hidden-form">
+                <div class="form-group">
+                    <label for="fullName">Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" required>
+                    <span class="error-msg">Please enter your full name</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="+91 XXXXXXXXXX" required>
+                        <span class="error-msg">Enter a valid phone number</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" placeholder="Age" min="10" max="120" required>
+                        <span class="error-msg">Enter valid age</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="you@example.com">
+                    <span class="error-msg">Enter a valid email</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span class="error-msg">Please select</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="bloodGroup">Blood Group</label>
+                        <select id="bloodGroup">
+                            <option value="" disabled selected>Select</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="emergencyContact">Emergency Contact Number</label>
+                    <input type="tel" id="emergencyContact" placeholder="+91 XXXXXXXXXX" required>
+                    <span class="error-msg">Emergency contact is required</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" placeholder="Your home address..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="btnSubmit">
+                    Register & Continue ->
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="./login/login.js"></script>
+</body>
+
+</html>

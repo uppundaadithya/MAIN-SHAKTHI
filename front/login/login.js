@@ -17,7 +17,7 @@ const db = getFirestore(app);
 
 const storedUserId = localStorage.getItem("shakthi_user_id");
 if (storedUserId) {
-    window.location.href = `/index.html?userId=${encodeURIComponent(storedUserId)}`;
+    window.location.href = `/user/index.html?userId=${encodeURIComponent(storedUserId)}`;
 }
 
 const loginForm = document.getElementById("loginForm");
@@ -71,7 +71,7 @@ function saveSession(userId) {
 }
 
 function redirectToDashboard(userId) {
-    window.location.href = `/index.html?userId=${encodeURIComponent(userId)}`;
+    window.location.href = `/user/index.html?userId=${encodeURIComponent(userId)}`;
 }
 
 function showSuccess(title, text) {

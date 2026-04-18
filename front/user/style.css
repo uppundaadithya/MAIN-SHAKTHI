@@ -52,6 +52,10 @@ body.profile-open {
     overflow: hidden;
 }
 
+body.map-open {
+    overflow: hidden;
+}
+
 .toast-stack {
     position: fixed;
     top: 16px;
@@ -408,6 +412,94 @@ nav {
     z-index: 30;
 }
 
+.map-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 24, 35, 0.48);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 32;
+}
+
+.live-map-panel {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%) translateY(104%);
+    width: min(100%, 460px);
+    height: min(76vh, 620px);
+    background: #fffaf3;
+    border-radius: 28px 28px 0 0;
+    box-shadow: 0 -18px 48px rgba(20, 24, 35, 0.18);
+    padding: 18px 18px 22px;
+    z-index: 33;
+    transition: transform 0.28s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+body.map-open .map-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.map-open .live-map-panel {
+    transform: translateX(-50%) translateY(0);
+}
+
+.live-map-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.map-eyebrow {
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+
+.live-map-top h2 {
+    font-size: 1.35rem;
+}
+
+.close-live-map {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.live-map-copy {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.map-frame-shell {
+    flex: 1;
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #e5efff 0%, #f6f8fb 100%);
+    box-shadow: inset 0 0 0 1px rgba(109, 115, 135, 0.1);
+}
+
+.map-frame-shell iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+}
+
 .profile-panel {
     position: fixed;
     top: 0;
@@ -519,6 +611,28 @@ nav {
     border-radius: 16px;
     background: rgba(255, 255, 255, 0.7);
     border: 1px solid rgba(109, 115, 135, 0.12);
+}
+
+.profile-logout {
+    margin-top: auto;
+    width: 100%;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #c84c31, #9e2711);
+    color: #fff;
+    font-family: "Red Hat Text", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 16px 28px rgba(200, 76, 49, 0.24);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.profile-logout:hover,
+.profile-logout:active {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 34px rgba(200, 76, 49, 0.28);
 }
 
 @keyframes shortcutPulse {

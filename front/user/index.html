@@ -16,6 +16,21 @@
 <body>
     <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
     <div class="profile-overlay" id="profileOverlay"></div>
+    <div class="map-overlay" id="mapOverlay"></div>
+
+    <section class="live-map-panel" id="liveMapPanel" aria-hidden="true">
+        <div class="live-map-top">
+            <div>
+                <p class="map-eyebrow">Live View</p>
+                <h2>Exact Location</h2>
+            </div>
+            <button class="close-live-map" id="closeLiveMap" type="button" aria-label="Close live map">&times;</button>
+        </div>
+        <p class="live-map-copy" id="liveMapStatus">Fetching your exact location inside SHAKTHI.</p>
+        <div class="map-frame-shell">
+            <iframe id="liveMapFrame" title="Live location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </section>
 
     <aside class="profile-panel" id="profilePanel" aria-hidden="true">
         <div class="profile-top">
@@ -54,6 +69,8 @@
                 <strong id="profileMeta">Not added</strong>
             </div>
         </div>
+
+        <button class="profile-logout" id="logoutBtn" type="button">Logout</button>
     </aside>
 
     <nav>
@@ -73,7 +90,7 @@
         <div class="content">
             <section class="box">
                 <span class="eyebrow">Safety in Every Step</span>
-                <h5>Fast help, trusted contacts, and smart alerts in one place.</h5>
+
                 <ul>
                     <li>One app for all emergency needs.</li>
                     <li>Reach nearby women and trusted contacts quickly.</li>
@@ -106,9 +123,10 @@
                         <img src="../assets/call.png" alt="Call">
                         <span>Call</span>
                     </button>
-                    <div class="tool empty">
-                        <span>Nearby Help</span>
-                    </div>
+                    <button class="tool" id="liveMapTool" type="button">
+                        <img src="../assets/location.png" alt="Live Map">
+                        <span>Live Map</span>
+                    </button>
                     <div class="tool empty">
                         <span>Safe Route</span>
                     </div>
