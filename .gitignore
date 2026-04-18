@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json  # Optional, since back/ has it for Vercel
+
+# Vercel
+.vercel
+.vscode/settings.json
+
+# Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+*.log
+logs/
+
+# Front assets (temp/build)
+front/dist/
+front/build/
+front/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
