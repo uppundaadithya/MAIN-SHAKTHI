@@ -3,13 +3,18 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
+// Vercel provides the PORT automatically
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the 'front' directory
+/**
+ * IMPORTANT: In Vercel, static files are best handled by Vercel itself.
+ * However, to keep your logic, we use absolute paths.
+ * This assumes 'front' and 'back' are siblings in your project root.
+ */
 app.use(express.static(path.join(__dirname, '../front')));
 
 // Default route - open app shell first
@@ -26,16 +31,7 @@ app.get('/login', (req, res) => {
     res.redirect('/login.html');
 });
 
-app.get('/login/', (req, res) => {
-    res.redirect('/login.html');
-});
-
 app.get('/admin', (req, res) => {
-    res.redirect('/admin/login.html');
-});
-
-// Admin entry path
-app.get('/admin.html', (req, res) => {
     res.redirect('/admin/login.html');
 });
 
@@ -45,21 +41,23 @@ app.get('/user', (req, res) => {
 
 // Server status check
 app.get('/api/status', (req, res) => {
-    res.json({ message: "SHAKTHI server is running!" });
+    res.json({ 
+        status: "online",
+        message: "SHAKTHI server is running on Vercel!",
+        timestamp: new Date()
+    });
 });
 
-// Start the server
-module.exports = app.listen(PORT, () => {
-    console.log('');
-    console.log('╔══════════════════════════════════════════════╗');
-    console.log('║         🛡️  SHAKTHI SERVER STARTED  🛡️        ║');
-    console.log('╠══════════════════════════════════════════════╣');
-    console.log(`║  🌐  App:    http://localhost:${PORT}            ║`);
-    console.log(`║  👤  Login:  http://localhost:${PORT}/login.html  ║`);
-    console.log(`║  🔧  Admin:  http://localhost:${PORT}/admin/login.html  ║`);
-    console.log('╚══════════════════════════════════════════════╝');
-    console.log('');
-    console.log('  All data flows through Firebase Firestore.');
-    console.log('  This server only serves static files.');
-    console.log('');
-});
+/**
+ * START LOGIC
+ * On Vercel, we export the app. 
+ * For local development, we call app.listen().
+ */
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`🛡️ SHAKTHI Local Server: http://localhost:${PORT}`);
+    });
+}
+
+// THIS IS REQUIRED FOR VERCEL
+module.exports = app;
