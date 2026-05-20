@@ -1,0 +1,11 @@
+{
+  "name": "main-shakthi",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix back start",
+    "dev": "npm --prefix back run dev",
+    "build": "npm --prefix back run build",
+    "install:back": "npm --prefix back install"
+  }
+}

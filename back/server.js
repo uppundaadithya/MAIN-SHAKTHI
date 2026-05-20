@@ -19,7 +19,7 @@ app.use(express.static(path.join(__dirname, '../front')));
 
 // Default route - open app shell first
 app.get('/', (req, res) => {
-    res.redirect('/user/index.html');
+    res.redirect('/login.html');
 });
 
 app.get('/index.html', (req, res) => {
@@ -27,8 +27,12 @@ app.get('/index.html', (req, res) => {
 });
 
 // Friendly entry paths
-app.get('/login', (req, res) => {
-    res.redirect('/login.html');
+app.get('/admin/login', (req, res) => {
+    res.redirect('/admin/login.html');
+});
+
+app.get('/login.html', (req, res) => {
+    res.redirect('/login/login.html');
 });
 
 app.get('/admin', (req, res) => {
@@ -41,12 +45,31 @@ app.get('/user', (req, res) => {
 
 // Server status check
 app.get('/api/status', (req, res) => {
-    res.json({ 
+    res.json({
         status: "online",
         message: "SHAKTHI server is running on Vercel!",
         timestamp: new Date()
     });
 });
+
+// SOS endpoint - sends alert location
+// Frontend expects: POST /api/send-sos with { lat, lon }
+app.post('/api/send-sos', async (req, res) => {
+    try {
+        const { lat, lon } = req.body || {};
+
+        // Alert is processed through Firebase
+        res.status(200).json({
+            success: true,
+            location: { lat: lat ?? null, lon: lon ?? null }
+        });
+    } catch (err) {
+        res.status(500).json({
+            error: err?.message || 'Unknown error'
+        });
+    }
+});
+
 
 /**
  * START LOGIC

@@ -44,7 +44,20 @@
         </section>
     </main>
 
-    <script type="module" src="login.js"></script>
+    <div class="alert-modal" id="loginAlertModal" aria-hidden="true">
+        <div class="alert-modal-card">
+            <div class="alert-modal-icon">🚨</div>
+            <h2 id="loginAlertTitle">New Alert Received</h2>
+            <p class="alert-modal-summary" id="loginAlertSummary">Waiting for alert details...</p>
+            <pre class="alert-modal-details" id="loginAlertDetails"></pre>
+            <div class="alert-modal-actions">
+                <a id="loginAlertMap" class="btn-map" href="#" target="_blank">View Location</a>
+                <button id="loginAlertClose" class="btn-close" type="button">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="login.js"></script>
 </body>
 
 </html>

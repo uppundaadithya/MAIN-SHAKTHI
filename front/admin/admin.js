@@ -24,10 +24,16 @@ const db = getFirestore(app);
 let sirenAudio = null;
 let sirenPlaying = false;
 let initialLoadComplete = false;
+let audioContext = null;
 
 const seenAlertIds = new Set();
 const toastStack = document.getElementById("toastStack");
 const logoutBtn = document.getElementById("btnAdminLogout");
+
+// Request notification permission
+if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+}
 
 function escapeHtml(text) {
     const div = document.createElement("div");
@@ -51,37 +57,55 @@ function showToast(title, message, tone = "info") {
 }
 
 function createSiren() {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = audioCtx.createOscillator();
-    const gainNode = audioCtx.createGain();
-
-    oscillator.type = "sawtooth";
-    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-
-    function sirenCycle() {
-        const now = audioCtx.currentTime;
-        oscillator.frequency.linearRampToValueAtTime(1200, now + 0.5);
-        oscillator.frequency.linearRampToValueAtTime(600, now + 1.0);
-    }
-
-    oscillator.start();
-    sirenCycle();
-    const sirenInterval = setInterval(sirenCycle, 1000);
-
-    return {
-        stop() {
-            clearInterval(sirenInterval);
-            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
-            setTimeout(() => {
-                oscillator.stop();
-                audioCtx.close();
-            }, 200);
+    try {
+        if (!audioContext || audioContext.state === "closed") {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
-    };
+        
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = "sawtooth";
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        let isPlaying = true;
+
+        function sirenCycle() {
+            if (!isPlaying || audioContext.state === "closed") return;
+            
+            const now = audioContext.currentTime;
+            oscillator.frequency.linearRampToValueAtTime(1200, now + 0.5);
+            oscillator.frequency.linearRampToValueAtTime(600, now + 1.0);
+        }
+
+        oscillator.start();
+        sirenCycle();
+        const sirenInterval = setInterval(() => {
+            if (isPlaying) sirenCycle();
+        }, 1000);
+
+        return {
+            stop() {
+                isPlaying = false;
+                clearInterval(sirenInterval);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.1);
+                setTimeout(() => {
+                    try {
+                        oscillator.stop();
+                    } catch (e) {
+                        // Already stopped
+                    }
+                }, 200);
+            }
+        };
+    } catch (error) {
+        console.log("Siren creation error:", error);
+        return { stop: () => {} };
+    }
 }
 
 function playSiren() {
@@ -94,8 +118,26 @@ function playSiren() {
         sirenPlaying = true;
         document.getElementById("btnSilence")?.classList.add("active");
         document.getElementById("sosFlash")?.classList.add("active");
+        
+        // Change tab title to show alert
+        document.title = "🚨 ALERT - SHAKTHI Admin";
     } catch (error) {
-        console.log("Audio autoplay blocked:", error);
+        console.log("Siren playback error:", error);
+    }
+}
+
+function sendBrowserNotification(title, options = {}) {
+    if ("Notification" in window && Notification.permission === "granted") {
+        try {
+            new Notification(title, {
+                icon: "🛡️",
+                badge: "🛡️",
+                requireInteraction: true,
+                ...options
+            });
+        } catch (error) {
+            console.log("Notification error:", error);
+        }
     }
 }
 
@@ -108,6 +150,9 @@ function silenceSiren() {
     sirenPlaying = false;
     document.getElementById("btnSilence")?.classList.remove("active");
     document.getElementById("sosFlash")?.classList.remove("active");
+    
+    // Restore tab title
+    document.title = "SHAKTHI - Admin Dashboard";
 }
 
 function showSOSModal(alert) {
@@ -117,10 +162,20 @@ function showSOSModal(alert) {
     const respondBtn = document.getElementById("btnRespond");
     const modal = document.getElementById("sosModal");
 
+    const typeLabel = alert.type === "location"
+        ? "LOCATION ALERT"
+        : alert.type === "sos"
+            ? "SOS EMERGENCY"
+            : alert.type === "alarm"
+                ? "ALARM ALERT"
+                : alert.type === "call"
+                    ? "CALL ALERT"
+                    : alert.type === "live_map"
+                        ? "LIVE MAP ALERT"
+                        : "NEW NOTIFICATION";
+
     if (modalTitle) {
-        modalTitle.textContent = alert.type === "location"
-            ? `${String(alert.userName || "USER").toUpperCase()} IN DANGER`
-            : "EMERGENCY SOS ALERT";
+        modalTitle.textContent = `${typeLabel}`;
     }
 
     if (userDisplay) {
@@ -155,6 +210,123 @@ document.getElementById("btnSilence")?.addEventListener("click", silenceSiren);
 document.getElementById("btnDismiss")?.addEventListener("click", () => {
     document.getElementById("sosModal")?.classList.remove("active");
     silenceSiren();
+});
+
+/* ===== All Alerts Popup ===== */
+const ahModal = document.getElementById("alertsHistoryModal");
+const ahBody = document.getElementById("alertsHistoryBody");
+const ahCount = document.getElementById("alertsHistoryCount");
+const ahLoading = document.getElementById("alertsHistoryLoading");
+const btnAllAlerts = document.getElementById("btnAllAlerts");
+const btnCloseAH = document.getElementById("btnCloseAlertsHistory");
+
+let allAlertDocs = [];
+
+function openAlertsHistory() {
+    ahModal?.classList.add("active");
+    ahModal?.setAttribute("aria-hidden", "false");
+    if (allAlertDocs.length === 0) {
+        loadAllAlerts();
+    } else {
+        renderAllAlerts("all");
+    }
+}
+
+function closeAlertsHistory() {
+    ahModal?.classList.remove("active");
+    ahModal?.setAttribute("aria-hidden", "true");
+}
+
+btnAllAlerts?.addEventListener("click", openAlertsHistory);
+btnCloseAH?.addEventListener("click", closeAlertsHistory);
+ahModal?.addEventListener("click", (e) => {
+    if (e.target === ahModal) closeAlertsHistory();
+});
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && ahModal?.classList.contains("active")) {
+        closeAlertsHistory();
+    }
+});
+
+async function loadAllAlerts() {
+    if (!ahBody || !ahLoading) return;
+    ahLoading.style.display = "flex";
+    ahBody.querySelectorAll(".ah-alert-row").forEach(r => r.remove());
+
+    try {
+        const { collection, getDocs, orderBy } = await import(
+            "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js"
+        );
+        const snap = await getDocs(
+            query(collection(db, "alerts"), orderBy("timestamp", "desc"))
+        );
+        allAlertDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        ahLoading.style.display = "none";
+
+        // Show btnAllAlerts once data is loaded
+        btnAllAlerts?.classList.add("visible");
+        renderAllAlerts("all");
+    } catch (err) {
+        console.error("Failed to load all alerts:", err);
+        ahLoading.style.display = "none";
+        ahBody.innerHTML = `<div class="ah-empty"><div class="ah-empty-icon">⚠️</div><p>Failed to load alerts.</p></div>`;
+        ahCount.textContent = "Error loading alerts";
+    }
+}
+
+function renderAllAlerts(filter) {
+    if (!ahBody) return;
+    ahBody.querySelectorAll(".ah-alert-row").forEach(r => r.remove());
+
+    const filtered = filter === "all"
+        ? allAlertDocs
+        : allAlertDocs.filter(a => (a.type || "") === filter);
+
+    if (filtered.length === 0) {
+        ahBody.innerHTML = `<div class="ah-empty"><div class="ah-empty-icon">🔕</div><p>No alerts found for this filter.</p></div>`;
+        ahCount.textContent = "0 alerts loaded";
+        return;
+    }
+
+    const icons = { sos: "🚨", location: "📍", alarm: "🔔", call: "📞", live_map: "🗺️" };
+    const labels = { sos: "SOS EMERGENCY", location: "LOCATION SHARED", alarm: "ALARM TRIGGERED", call: "EMERGENCY CALL", live_map: "LIVE MAP TO POLICE" };
+
+    const frag = document.createDocumentFragment();
+    filtered.forEach(alert => {
+        const type = alert.type || "sos";
+        const row = document.createElement("div");
+        const mapExtra = (alert.latitude && alert.longitude)
+            ? `<span class="ah-agency">📍 ${alert.latitude.toFixed(4)}, ${alert.longitude.toFixed(4)}</span>`
+            : ``;
+
+        row.className = `ah-alert-row ah-${type}`;
+        row.innerHTML = `
+            <div class="ah-icon">${icons[type] || "⚠️"}</div>
+            <div class="ah-info">
+                <div class="ah-type">${labels[type] || "ALERT"}</div>
+                <div class="ah-user">${escapeHtml(alert.userName || "Unknown")}</div>
+                <div class="ah-meta">📱 ${escapeHtml(alert.userPhone || "N/A")} &nbsp; ${escapeHtml(alert.message || "No message")}</div>
+                ${mapExtra}
+            </div>
+            <div class="ah-time">${new Date(alert.timestamp).toLocaleString("en-IN", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+            })}</div>
+        `;
+        frag.appendChild(row);
+    });
+    ahBody.appendChild(frag);
+    ahCount.textContent = `${filtered.length} alert${filtered.length !== 1 ? "s" : ""} loaded`;
+}
+
+/* Filter buttons */
+document.querySelectorAll("#alertsHistoryModal .filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll("#alertsHistoryModal .filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderAllAlerts(btn.dataset.filter || "all");
+    });
 });
 
 logoutBtn?.addEventListener("click", () => {
@@ -192,6 +364,10 @@ onSnapshot(alertsRef, (snapshot) => {
         call: "EMERGENCY CALL",
         live_map: "LIVE MAP TO POLICE"
     };
+
+    const changedAlerts = snapshot.docChanges()
+        .filter(change => change.type === "added" || change.type === "modified")
+        .map(change => ({ id: change.doc.id, ...change.doc.data(), changeType: change.type }));
 
     if (snapshot.empty) {
         alertList.innerHTML = `
@@ -242,21 +418,34 @@ onSnapshot(alertsRef, (snapshot) => {
         `;
         alertList.appendChild(div);
 
-        if (initialLoadComplete && !seenAlertIds.has(alert.id)) {
-            playSiren();
-            showSOSModal(alert);
-            const adminAlertMessage = alert.type === "location"
-                ? `ALERT! ${alert.userName || "User"} IN DANGER`
-                : `${alert.userName || "Unknown user"} sent a confirmed ${labels[alert.type] || "alert"} notification.`;
-            showToast(
-                alert.type === "location" ? "Danger Alert" : "New App Alert",
-                adminAlertMessage,
-                alert.type === "sos" || alert.type === "location" ? "error" : "info"
-            );
-        }
-
         seenAlertIds.add(alert.id);
     });
+
+    if (initialLoadComplete && changedAlerts.length > 0) {
+        const latestChange = changedAlerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
+        playSiren();
+        showSOSModal(latestChange);
+
+        const adminAlertMessage = latestChange.type === "location"
+            ? `ALERT! ${latestChange.userName || "User"} IN DANGER`
+            : `${latestChange.userName || "Unknown user"} sent a confirmed ${labels[latestChange.type] || "alert"} notification.`;
+
+        showToast(
+            latestChange.type === "location" ? "Danger Alert" : "Updated Alert",
+            adminAlertMessage,
+            latestChange.type === "sos" || latestChange.type === "location" ? "error" : "info"
+        );
+
+        const notificationTitle = latestChange.type === "location"
+            ? `🚨 DANGER: ${latestChange.userName || "User"}`
+            : `🔔 ${labels[latestChange.type] || "ALERT"} from ${latestChange.userName}`;
+        const notificationOptions = {
+            body: `${latestChange.message}\n📱 ${latestChange.userPhone}`,
+            tag: `alert-${latestChange.id}`,
+            renotify: true,
+        };
+        sendBrowserNotification(notificationTitle, notificationOptions);
+    }
 
     initialLoadComplete = true;
     document.getElementById("statAlerts").textContent = totalAlerts;

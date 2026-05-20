@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SHAKTHI</title>
+    <script>
+        (function () {
+            if (window.top !== window.self) {
+                window.top.location.replace(window.self.location.href);
+                return;
+            }
+
+            const userId = localStorage.getItem("shakthi_user_id");
+            if (userId) {
+                window.top.location.replace("/user/index.html?userId=" + encodeURIComponent(userId));
+            } else {
+                window.top.location.replace("/login/login.html");
+            }
+        })();
+    </script>
+</head>
+<body>
+    <p>Redirecting…</p>
+</body>
+</html>

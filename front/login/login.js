@@ -15,9 +15,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+if (window.top !== window.self) {
+    window.top.location.replace(window.self.location.href);
+}
+
 const storedUserId = localStorage.getItem("shakthi_user_id");
 if (storedUserId) {
-    window.location.href = `/user/index.html?userId=${encodeURIComponent(storedUserId)}`;
+    window.top.location.replace(`/user/index.html?userId=${encodeURIComponent(storedUserId)}`);
 }
 
 const loginForm = document.getElementById("loginForm");
@@ -71,7 +75,7 @@ function saveSession(userId) {
 }
 
 function redirectToDashboard(userId) {
-    window.location.href = `/user/index.html?userId=${encodeURIComponent(userId)}`;
+    window.top.location.replace(`/user/index.html?userId=${encodeURIComponent(userId)}`);
 }
 
 function showSuccess(title, text) {
