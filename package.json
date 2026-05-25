@@ -2,6 +2,9 @@
   "name": "main-shakthi",
   "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "back"
+  ],
   "scripts": {
     "start": "npm --prefix back start",
     "dev": "npm --prefix back run dev",

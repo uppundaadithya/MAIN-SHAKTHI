@@ -17,6 +17,40 @@ const db = getFirestore(app);
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("userId") || localStorage.getItem("shakthi_user_id");
 
+function openFullscreen() {
+    const root = document.documentElement;
+
+    if (document.fullscreenElement || !root.requestFullscreen) {
+        return Promise.resolve();
+    }
+
+    return root.requestFullscreen().catch((error) => {
+        console.warn("Fullscreen request was blocked:", error.message);
+    });
+}
+
+function keepUserPageFullscreen() {
+    openFullscreen();
+
+    const requestFullscreenOnce = () => {
+        openFullscreen();
+        document.removeEventListener("click", requestFullscreenOnce);
+        document.removeEventListener("touchstart", requestFullscreenOnce);
+        document.removeEventListener("keydown", requestFullscreenOnce);
+    };
+
+    document.addEventListener("DOMContentLoaded", openFullscreen);
+    window.addEventListener("pageshow", openFullscreen);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            openFullscreen();
+        }
+    });
+    document.addEventListener("click", requestFullscreenOnce);
+    document.addEventListener("touchstart", requestFullscreenOnce);
+    document.addEventListener("keydown", requestFullscreenOnce);
+}
+
 function redirectToLogin() {
     localStorage.removeItem("shakthi_user_id");
     localStorage.removeItem("shakthi_logged_in");
@@ -29,6 +63,7 @@ if (!userId) {
 
 localStorage.setItem("shakthi_user_id", userId);
 localStorage.setItem("shakthi_logged_in", "true");
+keepUserPageFullscreen();
 
 let currentUser = null;
 let liveLocationWatcherId = null;

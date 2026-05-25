@@ -6,6 +6,17 @@ const CREDENTIALS = {
     password: "shakthi@admin"
 };
 
+function openFullscreen() {
+    const root = document.documentElement;
+    if (document.fullscreenElement || !root.requestFullscreen) {
+        return Promise.resolve();
+    }
+
+    return root.requestFullscreen().catch((error) => {
+        console.warn("Fullscreen request was blocked:", error.message);
+    });
+}
+
 function showFieldError(inputEl, message) {
     const group = inputEl.closest(".form-group");
     if (!group) return;
@@ -67,6 +78,8 @@ if (form) {
             valid = false;
         }
         if (!valid) return;
+
+        openFullscreen();
 
         // Disable button while checking
         btn.disabled = true;

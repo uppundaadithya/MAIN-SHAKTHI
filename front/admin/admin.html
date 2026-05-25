@@ -68,7 +68,17 @@
             </div>
         </div>
 
-        <div class="alerts-panel">
+        <div class="admin-tabs" role="tablist" aria-label="Admin dashboard views">
+            <button class="admin-tab active" id="tabAlerts" type="button" role="tab" aria-selected="true" aria-controls="alertsPanel" data-tab-target="alerts">
+                Live Alerts
+            </button>
+            <button class="admin-tab" id="tabUsers" type="button" role="tab" aria-selected="false" aria-controls="usersPanel" data-tab-target="users">
+                Registered Users
+                <span class="tab-count" id="tabUserCount">0</span>
+            </button>
+        </div>
+
+        <div class="alerts-panel admin-tab-panel active" id="alertsPanel" role="tabpanel" aria-labelledby="tabAlerts">
             <div class="section-title">
                 🔔 Live Alerts
                 <span class="count-badge" id="alertCount">0</span>
@@ -81,7 +91,7 @@
             </div>
         </div>
 
-        <div class="users-panel">
+        <div class="users-panel admin-tab-panel" id="usersPanel" role="tabpanel" aria-labelledby="tabUsers">
             <div class="section-title">
                 👥 Registered Users
                 <span class="count-badge" id="userCount">0</span>

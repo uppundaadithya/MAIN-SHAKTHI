@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "buildCommand": "npm install",
+  "builds": [
+    {
+      "src": "back/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "nodeVersion": "20.x"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "back/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

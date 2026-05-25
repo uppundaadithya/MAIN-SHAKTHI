@@ -8,6 +8,33 @@ if (localStorage.getItem(ADMIN_SESSION_KEY) !== "true") {
     window.location.href = "/admin/login.html";
 }
 
+function openFullscreen() {
+    const root = document.documentElement;
+    if (document.fullscreenElement || !root.requestFullscreen) {
+        return Promise.resolve();
+    }
+
+    return root.requestFullscreen().catch((error) => {
+        console.warn("Fullscreen request was blocked:", error.message);
+    });
+}
+
+function enableFullscreenOnFirstInteraction() {
+    const requestOnce = () => {
+        openFullscreen();
+        document.removeEventListener("click", requestOnce);
+        document.removeEventListener("touchstart", requestOnce);
+        document.removeEventListener("keydown", requestOnce);
+    };
+
+    document.addEventListener("click", requestOnce);
+    document.addEventListener("touchstart", requestOnce);
+    document.addEventListener("keydown", requestOnce);
+}
+
+enableFullscreenOnFirstInteraction();
+openFullscreen();
+
 const firebaseConfig = {
     apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
     authDomain: "project-shakthi.firebaseapp.com",
@@ -29,6 +56,27 @@ let audioContext = null;
 const seenAlertIds = new Set();
 const toastStack = document.getElementById("toastStack");
 const logoutBtn = document.getElementById("btnAdminLogout");
+const adminTabs = document.querySelectorAll(".admin-tab");
+const adminTabPanels = document.querySelectorAll(".admin-tab-panel");
+
+function setAdminTab(target) {
+    adminTabs.forEach((tab) => {
+        const isActive = tab.dataset.tabTarget === target;
+        tab.classList.toggle("active", isActive);
+        tab.setAttribute("aria-selected", String(isActive));
+    });
+
+    adminTabPanels.forEach((panel) => {
+        const isActive = panel.id === `${target}Panel`;
+        panel.classList.toggle("active", isActive);
+    });
+}
+
+adminTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+        setAdminTab(tab.dataset.tabTarget);
+    });
+});
 
 // Request notification permission
 if ("Notification" in window && Notification.permission === "default") {
@@ -494,6 +542,7 @@ onSnapshot(usersRef, (snapshot) => {
 
     document.getElementById("statUsers").textContent = snapshot.size;
     document.getElementById("userCount").textContent = snapshot.size;
+    document.getElementById("tabUserCount").textContent = snapshot.size;
 }, (error) => {
     console.error("Users listener error:", error);
     showToast("User Sync Error", "The admin panel could not refresh the users list.", "error");

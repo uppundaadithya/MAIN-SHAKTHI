@@ -1,0 +1,25 @@
+{
+  "name": "SHAKTHI",
+  "short_name": "SHAKTHI",
+  "description": "SHAKTHI safety dashboard",
+  "start_url": "/",
+  "scope": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0a0a1a",
+  "theme_color": "#0a0a1a",
+  "icons": [
+    {
+      "src": "/assets/sos.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/sos.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
