@@ -664,7 +664,7 @@ body.map-open .live-map-panel {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 0;
+    min-height:calc(100vh - 400px);
     gap: 10px;
     margin-top: 10px;
 }
@@ -672,7 +672,7 @@ body.map-open .live-map-panel {
 .profile-tab-panel {
     display: none;
     flex: 1;
-    min-height: 0;
+    
     overflow: hidden;
 }
 
@@ -685,16 +685,13 @@ body.map-open .live-map-panel {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 0;
     gap: 10px;
     overflow-y: auto;
     padding-right: 4px;
     border: 0.5px solid;
     padding: 8px;
-    border-color: rgba(109, 115, 135, 0.12);
+    border-color: rgba(255, 188, 188, 0.551);
     border-radius: 10px;
-    min-height: calc(100vh - 400px);
-    
 
 }
 
@@ -702,7 +699,7 @@ body.map-open .live-map-panel {
 .profile-list-item {
     padding: 14px 16px;
     border-radius: 18px;
-    background: rgba(227, 255, 214, 0.285);
+    background: rgba(255, 236, 236, 0.285);
     box-shadow: inset 0 0 0 1px rgba(10, 35, 116, 0.12);
 }
 
