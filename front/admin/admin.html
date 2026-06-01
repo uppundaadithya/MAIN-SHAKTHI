@@ -153,6 +153,37 @@
             </div>
         </div>
     </div>
+
+    <div class="user-details-modal" id="userDetailsModal" aria-hidden="true">
+        <div class="user-details-card">
+            <div class="user-details-header">
+                <div>
+                    <h2>👤 User Details</h2>
+                    <p class="alerts-history-sub" id="userDetailsSub">View profile information and the latest alerts for the selected user.</p>
+                </div>
+                <button class="alerts-history-close" id="btnCloseUserDetails" type="button" aria-label="Close">&times;</button>
+            </div>
+            <div class="user-details-body">
+                <div class="user-profile-panel">
+                    <div class="user-detail-row"><span>Name</span><strong id="userDetailName">—</strong></div>
+                    <div class="user-detail-row"><span>Phone</span><strong id="userDetailPhone">—</strong></div>
+                    <div class="user-detail-row"><span>Email</span><strong id="userDetailEmail">—</strong></div>
+                    <div class="user-detail-row"><span>Blood Group</span><strong id="userDetailBlood">—</strong></div>
+                    <div class="user-detail-row"><span>Emergency Contact</span><strong id="userDetailEmergency">—</strong></div>
+                    <div class="user-detail-row"><span>Gender</span><strong id="userDetailGender">—</strong></div>
+                    <div class="user-detail-row"><span>Age</span><strong id="userDetailAge">—</strong></div>
+                    <div class="user-detail-row"><span>Address</span><strong id="userDetailAddress">—</strong></div>
+                    <div class="user-detail-row"><span>Registered</span><strong id="userDetailRegistered">—</strong></div>
+                </div>
+                <div class="user-alerts-panel">
+                    <div class="section-title user-alerts-title">Recent alerts</div>
+                    <div class="user-alerts-list" id="userAlertsList">
+                        <div class="ah-empty"><p>Select a user to see their alerts.</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -244,8 +244,119 @@ body {
     padding: 20px;
 }
 
-.alerts-history-modal.active {
+.alerts-history-modal.active,
+.user-details-modal.active {
     display: flex;
+}
+
+.user-details-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 11010;
+    background: rgba(10, 10, 26, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.user-details-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    max-width: 860px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-details-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 24px 24px 0;
+    gap: 12px;
+}
+
+.user-details-body {
+    display: grid;
+    grid-template-columns: 1.15fr 0.9fr;
+    gap: 20px;
+    padding: 20px 24px 24px;
+    overflow: hidden;
+}
+
+.user-profile-panel,
+.user-alerts-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.user-profile-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.user-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 0;
+}
+
+.user-detail-row span {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.user-detail-row strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.user-alerts-title {
+    margin-bottom: 14px;
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 800;
+}
+
+.user-alerts-list {
+    display: grid;
+    gap: 10px;
+    max-height: 56vh;
+    overflow-y: auto;
+}
+
+.user-row {
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.user-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(1px);
+}
+
+.user-row td {
+    padding: 14px 12px;
+}
+
+@media (max-width: 960px) {
+    .user-details-body {
+        grid-template-columns: 1fr;
+    }
 }
 
 .alerts-history-card {

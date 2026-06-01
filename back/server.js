@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const staticPath = path.join(process.cwd(), 'front');
+const staticPath = path.join(__dirname, '..', 'front');
 console.log('Serving static files from:', staticPath);
 app.use(express.static(staticPath));
 

@@ -238,7 +238,21 @@ const ahLoading = document.getElementById("alertsHistoryLoading");
 const btnAllAlerts = document.getElementById("btnAllAlerts");
 const btnCloseAH = document.getElementById("btnCloseAlertsHistory");
 
+const userDetailsModal = document.getElementById("userDetailsModal");
+const btnCloseUserDetails = document.getElementById("btnCloseUserDetails");
+const userDetailName = document.getElementById("userDetailName");
+const userDetailPhone = document.getElementById("userDetailPhone");
+const userDetailEmail = document.getElementById("userDetailEmail");
+const userDetailBlood = document.getElementById("userDetailBlood");
+const userDetailEmergency = document.getElementById("userDetailEmergency");
+const userDetailGender = document.getElementById("userDetailGender");
+const userDetailAge = document.getElementById("userDetailAge");
+const userDetailAddress = document.getElementById("userDetailAddress");
+const userDetailRegistered = document.getElementById("userDetailRegistered");
+const userAlertsList = document.getElementById("userAlertsList");
+
 let allAlertDocs = [];
+const userDocs = new Map();
 
 function openAlertsHistory() {
     ahModal?.classList.add("active");
@@ -261,9 +275,19 @@ ahModal?.addEventListener("click", (e) => {
     if (e.target === ahModal) closeAlertsHistory();
 });
 
+btnCloseUserDetails?.addEventListener("click", closeUserDetails);
+userDetailsModal?.addEventListener("click", (e) => {
+    if (e.target === userDetailsModal) closeUserDetails();
+});
+
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && ahModal?.classList.contains("active")) {
-        closeAlertsHistory();
+    if (e.key === "Escape") {
+        if (ahModal?.classList.contains("active")) {
+            closeAlertsHistory();
+        }
+        if (userDetailsModal?.classList.contains("active")) {
+            closeUserDetails();
+        }
     }
 });
 
@@ -331,6 +355,103 @@ function renderAllAlerts(filter) {
     });
     ahBody.appendChild(frag);
     ahCount.textContent = `${filtered.length} alert${filtered.length !== 1 ? "s" : ""} loaded`;
+}
+
+function openUserDetails(userId) {
+    const user = userDocs.get(userId);
+    if (!user || !userDetailsModal) return;
+
+    userDetailName.textContent = escapeHtml(user.fullName || "Unknown");
+    userDetailPhone.textContent = escapeHtml(user.phone || "N/A");
+    userDetailEmail.textContent = escapeHtml(user.email || "N/A");
+    userDetailBlood.textContent = escapeHtml(user.bloodGroup || "-");
+    userDetailEmergency.textContent = escapeHtml(user.emergencyContact || "-");
+    userDetailGender.textContent = escapeHtml(user.gender || "-");
+    userDetailAge.textContent = user.age || "-";
+    userDetailAddress.textContent = escapeHtml(user.address || "-");
+
+    const registeredAt = user.registeredAt || user.createdAt || user.timestamp;
+    userDetailRegistered.textContent = registeredAt
+        ? new Date(registeredAt).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        })
+        : "Unknown";
+
+    userAlertsList.innerHTML = `<div class="ah-loading"><div class="ah-spinner"></div><p>Loading user alerts…</p></div>`;
+    userDetailsModal.classList.add("active");
+    userDetailsModal.setAttribute("aria-hidden", "false");
+    loadUserAlerts(userId);
+}
+
+function closeUserDetails() {
+    if (!userDetailsModal) return;
+    userDetailsModal.classList.remove("active");
+    userDetailsModal.setAttribute("aria-hidden", "true");
+}
+
+async function loadUserAlerts(userId) {
+    if (!userAlertsList) return;
+    try {
+        const snap = await db.collection("alerts")
+            .where("userId", "==", userId)
+            .orderBy("timestamp", "desc")
+            .limit(10)
+            .get();
+
+        const alerts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderUserAlerts(alerts);
+    } catch (error) {
+        console.error("Failed to load user alerts:", error);
+        userAlertsList.innerHTML = `<div class="ah-empty"><div class="ah-empty-icon">⚠️</div><p>Could not load alerts for this user.</p></div>`;
+    }
+}
+
+function renderUserAlerts(alerts) {
+    if (!userAlertsList) return;
+    userAlertsList.innerHTML = "";
+
+    if (!alerts.length) {
+        userAlertsList.innerHTML = `<div class="ah-empty"><div class="ah-empty-icon">📭</div><p>No recent alerts for this user.</p></div>`;
+        return;
+    }
+
+    alerts.forEach(alert => {
+        const timeText = alert.timestamp ? new Date(alert.timestamp).toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit"
+        }) : "Unknown time";
+
+        const icon = alert.type === "sos" ? "🚨"
+            : alert.type === "location" ? "📍"
+            : alert.type === "alarm" ? "🔔"
+            : alert.type === "call" ? "📞"
+            : "🛡️";
+
+        const message = alert.message || alert.sourceLabel || "Alert received";
+        const location = Number.isFinite(alert.latitude) && Number.isFinite(alert.longitude)
+            ? `<div class="ah-agency">📍 ${alert.latitude.toFixed(4)}, ${alert.longitude.toFixed(4)}</div>`
+            : "";
+
+        const item = document.createElement("div");
+        item.className = `ah-alert-row ah-${alert.type || "sos"}`;
+        item.innerHTML = `
+            <div class="ah-icon">${icon}</div>
+            <div class="ah-info">
+                <div class="ah-type">${escapeHtml((alert.type || "alert").replace(/_/g, " ").toUpperCase())}</div>
+                <div class="ah-user">${escapeHtml(message)}</div>
+                <div class="ah-meta">${escapeHtml(alert.sourceLabel || "SHAKTHI App")} · ${escapeHtml(alert.userPhone || "N/A")}</div>
+                ${location}
+            </div>
+            <div class="ah-time">${timeText}</div>
+        `;
+        userAlertsList.appendChild(item);
+    });
 }
 
 /* Filter buttons */
@@ -487,13 +608,19 @@ usersRef.onSnapshot((snapshot) => {
 
     snapshot.forEach((docSnap) => {
         const user = docSnap.data();
-        const date = new Date(user.registeredAt).toLocaleDateString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-        });
+        const date = user.registeredAt
+            ? new Date(user.registeredAt).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            })
+            : "Unknown";
+
+        userDocs.set(docSnap.id, { id: docSnap.id, ...user });
 
         const tr = document.createElement("tr");
+        tr.className = "user-row";
+        tr.dataset.userId = docSnap.id;
         tr.innerHTML = `
             <td>${escapeHtml(user.fullName)}</td>
             <td>${escapeHtml(user.phone)}</td>
@@ -503,6 +630,7 @@ usersRef.onSnapshot((snapshot) => {
             <td>${escapeHtml(user.emergencyContact || "-")}</td>
             <td>${date}</td>
         `;
+        tr.addEventListener("click", () => openUserDetails(docSnap.id));
         tbody.appendChild(tr);
     });
 

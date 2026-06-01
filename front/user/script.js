@@ -119,6 +119,7 @@ async function loadUserProfile() {
 function openProfile() {
     document.body.classList.add("profile-open");
     profilePanel?.setAttribute("aria-hidden", "false");
+    profileSetTab("alerts");
 }
 
 function closeProfile() {
@@ -760,6 +761,8 @@ const pubSubmitStatus = document.getElementById("pubSubmitStatus");
 
 const profileTabAlerts = document.getElementById("profileTabAlerts");
 const profileTabReviews = document.getElementById("profileTabReviews");
+const profileAlertsPanel = document.getElementById("profileAlertsPanel");
+const profileReviewsPanel = document.getElementById("profileReviewsPanel");
 const profileAlertsList = document.getElementById("profileAlertsList");
 const profileReviewsList = document.getElementById("profileReviewsList");
 
@@ -856,20 +859,23 @@ function pubBeginReviewEdit(review) {
 
 function profileSetTab(tab) {
     const alertsActive = tab === "alerts";
+    const reviewsActive = tab === "reviews";
 
     profileTabAlerts?.classList.toggle("active", alertsActive);
-    profileTabReviews?.classList.toggle("active", !alertsActive);
+    profileTabReviews?.classList.toggle("active", reviewsActive);
 
-    document.getElementById("profileAlertsPanel")?.classList.toggle("active", alertsActive);
-    document.getElementById("profileReviewsPanel")?.classList.toggle("active", !alertsActive);
+    profileAlertsPanel?.classList.toggle("active", alertsActive);
+    profileReviewsPanel?.classList.toggle("active", reviewsActive);
+
+    if (profileAlertsPanel) profileAlertsPanel.setAttribute("aria-hidden", alertsActive ? "false" : "true");
+    if (profileReviewsPanel) profileReviewsPanel.setAttribute("aria-hidden", reviewsActive ? "false" : "true");
+
+    profileTabAlerts?.setAttribute("aria-selected", alertsActive ? "true" : "false");
+    profileTabReviews?.setAttribute("aria-selected", reviewsActive ? "true" : "false");
 
     if (alertsActive) {
-        profileTabAlerts?.setAttribute("aria-selected", "true");
-        profileTabReviews?.setAttribute("aria-selected", "false");
         profileLoadAlerts();
-    } else {
-        profileTabAlerts?.setAttribute("aria-selected", "false");
-        profileTabReviews?.setAttribute("aria-selected", "true");
+    } else if (reviewsActive) {
         profileLoadReviews();
     }
 }
@@ -1517,8 +1523,12 @@ logoutBtn?.addEventListener("click", () => {
 // init (UI only)
 pubInitUI();
 
-if (profileTabAlerts) profileTabAlerts.addEventListener("click", () => profileSetTab("alerts"));
-if (profileTabReviews) profileTabReviews.addEventListener("click", () => profileSetTab("reviews"));
+function initProfileTabs() {
+    if (profileTabAlerts) profileTabAlerts.addEventListener("click", () => profileSetTab("alerts"));
+    if (profileTabReviews) profileTabReviews.addEventListener("click", () => profileSetTab("reviews"));
+}
+
+initProfileTabs();
 profileSetTab("alerts");
 
 loadUserProfile();
