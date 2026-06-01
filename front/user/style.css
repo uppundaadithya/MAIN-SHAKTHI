@@ -693,6 +693,9 @@ body.map-open .live-map-panel {
     padding: 8px;
     border-color: rgba(109, 115, 135, 0.12);
     border-radius: 10px;
+    min-height: calc(100vh - 400px);
+    
+
 }
 
 .profile-panel-empty,
