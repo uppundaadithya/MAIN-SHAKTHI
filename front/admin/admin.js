@@ -1,6 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
 const ADMIN_SESSION_KEY = "shakthi_admin_logged_in";
 const ADMIN_USER_KEY = "shakthi_admin_user";
 
@@ -18,8 +15,8 @@ const firebaseConfig = {
     measurementId: "G-B9D4WBTEKG"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 let sirenAudio = null;
 let sirenPlaying = false;
@@ -276,12 +273,7 @@ async function loadAllAlerts() {
     ahBody.querySelectorAll(".ah-alert-row").forEach(r => r.remove());
 
     try {
-        const { collection, getDocs, orderBy } = await import(
-            "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js"
-        );
-        const snap = await getDocs(
-            query(collection(db, "alerts"), orderBy("timestamp", "desc"))
-        );
+        const snap = await db.collection("alerts").orderBy("timestamp", "desc").get();
         allAlertDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         ahLoading.style.display = "none";
 
@@ -356,9 +348,9 @@ logoutBtn?.addEventListener("click", () => {
     window.location.href = "/admin/login.html";
 });
 
-const alertsRef = query(collection(db, "alerts"), where("confirmedFromApp", "==", true));
+const alertsRef = db.collection("alerts").where("confirmedFromApp", "==", true);
 
-onSnapshot(alertsRef, (snapshot) => {
+alertsRef.onSnapshot((snapshot) => {
     const alertList = document.getElementById("alertList");
     if (!alertList) {
         return;
@@ -479,9 +471,9 @@ onSnapshot(alertsRef, (snapshot) => {
     showToast("Alert Sync Error", "The admin panel could not read confirmed app alerts.", "error");
 });
 
-const usersRef = collection(db, "users");
+const usersRef = db.collection("users");
 
-onSnapshot(usersRef, (snapshot) => {
+usersRef.onSnapshot((snapshot) => {
     const tbody = document.getElementById("usersBody");
     if (!tbody) {
         return;

@@ -1,7 +1,4 @@
 /* ===== SHAKTHI ACCESS - JS ===== */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
 const firebaseConfig = {
     apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
     authDomain: "project-shakthi.firebaseapp.com",
@@ -12,8 +9,8 @@ const firebaseConfig = {
     measurementId: "G-B9D4WBTEKG"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 if (window.top !== window.self) {
     window.top.location.replace(window.self.location.href);
@@ -108,8 +105,7 @@ loginForm?.addEventListener("submit", async (event) => {
     loginBtn.disabled = true;
 
     try {
-        const q = query(collection(db, "users"), where("phone", "==", phone));
-        const existing = await getDocs(q);
+        const existing = await db.collection("users").where("phone", "==", phone).get();
 
         if (existing.empty) {
             phoneInput.closest(".form-group").classList.add("error");
@@ -191,15 +187,14 @@ registrationForm?.addEventListener("submit", async (event) => {
     registerBtn.disabled = true;
 
     try {
-        const q = query(collection(db, "users"), where("phone", "==", userData.phone));
-        const existing = await getDocs(q);
+        const existing = await db.collection("users").where("phone", "==", userData.phone).get();
 
         let userId = "";
 
         if (!existing.empty) {
             userId = existing.docs[0].id;
         } else {
-            const docRef = await addDoc(collection(db, "users"), userData);
+            const docRef = await db.collection("users").add(userData);
             userId = docRef.id;
         }
 
