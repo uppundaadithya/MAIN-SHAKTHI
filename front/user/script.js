@@ -885,11 +885,12 @@ async function profileLoadAlerts() {
     if (!currentUser) await loadUserProfile();
     if (!currentUser) return;
 
+    console.debug("profileLoadAlerts", { userId: currentUser.id || userId });
     profileAlertsList.innerHTML = `<div class="profile-panel-empty">Loading alerts...</div>`;
 
     try {
         const alertsQuery = db.collection("alerts")
-            .where("userId", "==", currentUser.id);
+            .where("userId", "==", currentUser.id || userId);
         const alertsSnap = await alertsQuery.get();
         const alerts = alertsSnap.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -934,11 +935,12 @@ async function profileLoadReviews() {
     if (!currentUser) await loadUserProfile();
     if (!currentUser) return;
 
+    console.debug("profileLoadReviews", { userId: currentUser.id || userId });
     profileReviewsList.innerHTML = `<div class="profile-panel-empty">Loading your reviews...</div>`;
 
     try {
         const reviewsQuery = db.collection(PUBLIC_REVIEW_COLLECTION)
-            .where("userId", "==", currentUser.id);
+            .where("userId", "==", currentUser.id || userId);
         const reviewsSnap = await reviewsQuery.get();
         const reviews = reviewsSnap.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -1529,6 +1531,9 @@ function initProfileTabs() {
 }
 
 initProfileTabs();
+loadUserProfile().then(() => {
+    if (profileAlertsPanel?.classList.contains("active")) {
+        profileLoadAlerts();
+    }
+});
 profileSetTab("alerts");
-
-loadUserProfile();
