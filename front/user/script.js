@@ -1,19 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import {
-    getFirestore,
-    collection,
-    addDoc,
-    doc,
-    getDoc,
-    updateDoc,
-    query,
-    where,
-    onSnapshot,
-    orderBy,
-    limit,
-    getDocs
-} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
 const firebaseConfig = {
     apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
     authDomain: "project-shakthi.firebaseapp.com",
@@ -24,8 +8,8 @@ const firebaseConfig = {
     measurementId: "G-B9D4WBTEKG"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 const params = new URLSearchParams(window.location.search);
 const userId = params.get("userId") || localStorage.getItem("shakthi_user_id");
@@ -110,10 +94,10 @@ function updateProfileUI(user) {
 
 async function loadUserProfile() {
     try {
-        const userRef = doc(db, "users", userId);
-        const userSnap = await getDoc(userRef);
+        const userRef = db.collection("users").doc(userId);
+        const userSnap = await userRef.get();
 
-        if (!userSnap.exists()) {
+        if (!userSnap.exists) {
             showToast("Profile Missing", "This user profile was not found in Firebase.", "error");
             setTimeout(() => redirectToLogin(), 600);
             return;
@@ -585,7 +569,7 @@ async function sendAlert(type, extraData = {}) {
     };
 
     try {
-        await addDoc(collection(db, "alerts"), alertData);
+        await db.collection("alerts").add(alertData);
         return true;
     } catch (err) {
         console.error("sendAlert error:", err?.code, err?.message);
@@ -898,11 +882,9 @@ async function profileLoadAlerts() {
     profileAlertsList.innerHTML = `<div class="profile-panel-empty">Loading alerts...</div>`;
 
     try {
-        const alertsQuery = query(
-            collection(db, "alerts"),
-            where("userId", "==", currentUser.id)
-        );
-        const alertsSnap = await getDocs(alertsQuery);
+        const alertsQuery = db.collection("alerts")
+            .where("userId", "==", currentUser.id);
+        const alertsSnap = await alertsQuery.get();
         const alerts = alertsSnap.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -949,11 +931,9 @@ async function profileLoadReviews() {
     profileReviewsList.innerHTML = `<div class="profile-panel-empty">Loading your reviews...</div>`;
 
     try {
-        const reviewsQuery = query(
-            collection(db, PUBLIC_REVIEW_COLLECTION),
-            where("userId", "==", currentUser.id)
-        );
-        const reviewsSnap = await getDocs(reviewsQuery);
+        const reviewsQuery = db.collection(PUBLIC_REVIEW_COLLECTION)
+            .where("userId", "==", currentUser.id);
+        const reviewsSnap = await reviewsQuery.get();
         const reviews = reviewsSnap.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
             .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -1114,8 +1094,8 @@ function pubInitUI() {
             showToast(isEditing ? "Updating review" : "Submitting review", "Please wait...", "info");
 
             if (isEditing) {
-                const reviewRef = doc(db, PUBLIC_REVIEW_COLLECTION, pubEditReviewId);
-                await updateDoc(reviewRef, {
+                const reviewRef = db.collection(PUBLIC_REVIEW_COLLECTION).doc(pubEditReviewId);
+                await reviewRef.update({
                     placeName,
                     latitude: publicReviewPinCoords.latitude,
                     longitude: publicReviewPinCoords.longitude,
@@ -1124,32 +1104,27 @@ function pubInitUI() {
                     edited: true
                 });
             } else {
-                const docRef = await addDoc(
-                    collection(db, PUBLIC_REVIEW_COLLECTION),
-                    {
-                        placeName,
-                        latitude: publicReviewPinCoords.latitude,
-                        longitude: publicReviewPinCoords.longitude,
-                        safetyStatus: pubSafetyStatus,
-                        userId: currentUser?.id || userId,
-                        userName: currentUser?.fullName || "Unknown",
-                        timestamp: new Date().toISOString(),
-                        resolved: false
-                    }
-                );
+                const docRef = await db.collection(PUBLIC_REVIEW_COLLECTION).add({
+                    placeName,
+                    latitude: publicReviewPinCoords.latitude,
+                    longitude: publicReviewPinCoords.longitude,
+                    safetyStatus: pubSafetyStatus,
+                    userId: currentUser?.id || userId,
+                    userName: currentUser?.fullName || "Unknown",
+                    timestamp: new Date().toISOString(),
+                    resolved: false
+                });
                 pubEditReviewId = docRef.id;
             }
 
             if (comment) {
-                await addDoc(
-                    collection(db, `${PUBLIC_REVIEW_COLLECTION}/${pubEditReviewId}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`),
-                    {
+                await db.collection(`${PUBLIC_REVIEW_COLLECTION}/${pubEditReviewId}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`)
+                    .add({
                         userId: currentUser?.id || userId,
                         userName: currentUser?.fullName || "Unknown",
                         text: comment,
                         timestamp: new Date().toISOString()
-                    }
-                );
+                    });
             }
 
             showToast(isEditing ? "Review Updated" : "Review Submitted", isEditing ? "Your review has been updated." : "Thanks! Your feedback is visible to all users.", "success");
@@ -1267,13 +1242,11 @@ function pubLoadFeed() {
     feedList.innerHTML = `<div class="pub-review-card">Loading reviews...</div>`;
 
     try {
-        const q = query(
-            collection(db, PUBLIC_REVIEW_COLLECTION),
-            orderBy("timestamp", "desc"),
-            limit(20)
-        );
+        const q = db.collection(PUBLIC_REVIEW_COLLECTION)
+            .orderBy("timestamp", "desc")
+            .limit(20);
 
-        publicFeedUnsub = onSnapshot(q, async (snap) => {
+        publicFeedUnsub = q.onSnapshot(async (snap) => {
             const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
             pubUpdateFeedMap(docs);
 
@@ -1326,13 +1299,10 @@ function pubLoadFeed() {
 
                 // load recent comments
                 try {
-                    const commentsSnap = await getDocs(
-                        query(
-                            collection(db, `${PUBLIC_REVIEW_COLLECTION}/${r.id}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`),
-                            orderBy("timestamp", "desc"),
-                            limit(5)
-                        )
-                    );
+                    const commentsSnap = await db.collection(`${PUBLIC_REVIEW_COLLECTION}/${r.id}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`)
+                        .orderBy("timestamp", "desc")
+                        .limit(5)
+                        .get();
                     const comments = commentsSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
                     const commentsEl = document.getElementById(`pubComments-${r.id}`);
 
@@ -1360,15 +1330,13 @@ function pubLoadFeed() {
                     if (!text) return;
 
                     try {
-                        await addDoc(
-                            collection(db, `${PUBLIC_REVIEW_COLLECTION}/${r.id}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`),
-                            {
+                        await db.collection(`${PUBLIC_REVIEW_COLLECTION}/${r.id}/${PUBLIC_REVIEW_COMMENTS_COLLECTION}`)
+                            .add({
                                 userId: currentUser?.id || userId,
                                 userName: currentUser?.fullName || "Unknown",
                                 text,
                                 timestamp: new Date().toISOString()
-                            }
-                        );
+                            });
                         if (input) input.value = "";
                     } catch (err) {
                         console.error("Comment post failed", err);
