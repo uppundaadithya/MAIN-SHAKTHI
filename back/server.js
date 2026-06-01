@@ -10,12 +10,9 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-/**
- * IMPORTANT: In Vercel, static files are best handled by Vercel itself.
- * However, to keep your logic, we use absolute paths.
- * This assumes 'front' and 'back' are siblings in your project root.
- */
-app.use(express.static(path.join(__dirname, '../front')));
+const staticPath = path.join(process.cwd(), 'front');
+console.log('Serving static files from:', staticPath);
+app.use(express.static(staticPath));
 
 // Default route - open app shell first
 app.get('/', (req, res) => {
