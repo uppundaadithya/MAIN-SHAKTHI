@@ -1,18 +1,7 @@
-# Firebase Fix Complete ✅ script.js syntax fixed
-## Progress:
-- [x] Fix front/api/send-sos.js (ESM serverless)
-- [x] Update script.js (Firebase logging + Twilio fetch + syntax)
-- [ ] Test local: cd back && npm start
-- [ ] Deploy: cd front && vercel --prod
-- [ ] Add Vercel env: TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE
-- [ ] Test Firebase reads on Vercel
+# TODO
 
-## Deploy Instructions:
-```
-cd front
-npm i -g vercel
-vercel login
-vercel --prod
-```
-Add Twilio env vars in Vercel dashboard.
+- [x] Fix confirm-timer modal so alert onConfirm callback fires reliably after 5 seconds (unless Cancel is clicked).
+
+- [ ] Verify SOS/location/alarm/call triggers create Firestore alert documents with `confirmedFromApp: true`.
+- [ ] Verify admin popup updates when new alerts arrive.
 

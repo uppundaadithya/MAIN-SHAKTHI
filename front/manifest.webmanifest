@@ -4,7 +4,6 @@
   "description": "SHAKTHI safety dashboard",
   "start_url": "/",
   "scope": "/",
-  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#0a0a1a",
   "theme_color": "#0a0a1a",

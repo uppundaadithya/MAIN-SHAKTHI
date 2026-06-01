@@ -8,33 +8,6 @@ if (localStorage.getItem(ADMIN_SESSION_KEY) !== "true") {
     window.location.href = "/admin/login.html";
 }
 
-function openFullscreen() {
-    const root = document.documentElement;
-    if (document.fullscreenElement || !root.requestFullscreen) {
-        return Promise.resolve();
-    }
-
-    return root.requestFullscreen().catch((error) => {
-        console.warn("Fullscreen request was blocked:", error.message);
-    });
-}
-
-function enableFullscreenOnFirstInteraction() {
-    const requestOnce = () => {
-        openFullscreen();
-        document.removeEventListener("click", requestOnce);
-        document.removeEventListener("touchstart", requestOnce);
-        document.removeEventListener("keydown", requestOnce);
-    };
-
-    document.addEventListener("click", requestOnce);
-    document.addEventListener("touchstart", requestOnce);
-    document.addEventListener("keydown", requestOnce);
-}
-
-enableFullscreenOnFirstInteraction();
-openFullscreen();
-
 const firebaseConfig = {
     apiKey: "AIzaSyAq2xi7wTiIcwtUuIqIbqVVbamp0NcZPW4",
     authDomain: "project-shakthi.firebaseapp.com",
@@ -444,7 +417,7 @@ onSnapshot(alertsRef, (snapshot) => {
         });
 
         let locationBtn = "";
-        if (alert.latitude && alert.longitude) {
+        if (Number.isFinite(alert.latitude) && Number.isFinite(alert.longitude)) {
             const mapUrl = `https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`;
             locationBtn = `<div class="alert-actions"><a class="btn-map" href="${mapUrl}" target="_blank">📍 Map</a></div>`;
         }
@@ -469,6 +442,7 @@ onSnapshot(alertsRef, (snapshot) => {
         seenAlertIds.add(alert.id);
     });
 
+    // Trigger popup and siren when ANY alert is added or modified
     if (initialLoadComplete && changedAlerts.length > 0) {
         const latestChange = changedAlerts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))[0];
         playSiren();
@@ -490,7 +464,7 @@ onSnapshot(alertsRef, (snapshot) => {
         const notificationOptions = {
             body: `${latestChange.message}\n📱 ${latestChange.userPhone}`,
             tag: `alert-${latestChange.id}`,
-            renotify: true,
+            renotify: true
         };
         sendBrowserNotification(notificationTitle, notificationOptions);
     }

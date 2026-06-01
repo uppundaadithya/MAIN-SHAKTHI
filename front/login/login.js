@@ -35,17 +35,6 @@ const successTitle = document.getElementById("successTitle");
 const successText = document.getElementById("successText");
 const toastStack = document.getElementById("toastStack");
 
-function openFullscreen() {
-    const root = document.documentElement;
-    if (document.fullscreenElement || !root.requestFullscreen) {
-        return Promise.resolve();
-    }
-
-    return root.requestFullscreen().catch((error) => {
-        console.warn("Fullscreen request was blocked:", error.message);
-    });
-}
-
 function showToast(title, message, tone = "info") {
     if (!toastStack) {
         return;
@@ -113,8 +102,6 @@ loginForm?.addEventListener("submit", async (event) => {
         phoneInput.closest(".form-group").classList.add("error");
         return;
     }
-
-    openFullscreen();
 
     const loginBtn = document.getElementById("btnLogin");
     loginBtn.textContent = "Checking...";
@@ -186,8 +173,6 @@ registrationForm?.addEventListener("submit", async (event) => {
     if (!valid) {
         return;
     }
-
-    openFullscreen();
 
     const userData = {
         fullName: fullName.value.trim(),

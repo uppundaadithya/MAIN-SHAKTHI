@@ -10,6 +10,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./police.css">
+    <!-- Leaflet for interactive maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -17,6 +20,8 @@
         rel="stylesheet">
     <link rel="icon" type="image/png" sizes="512x512" href="../assets/SHAKTHI-favicon.png">
     <title>SHAKTHI</title>
+    <!-- Note: Police data uses free OpenStreetMap (Overpass) -->
+    <meta name="description" content="SHAKTHI uses free OpenStreetMap data for nearby police lookup." />
 </head>
 
 <body>
@@ -24,8 +29,46 @@
     <div class="profile-overlay" id="profileOverlay"></div>
     <div class="map-overlay" id="mapOverlay"></div>
 
+    <!-- Confirm Timer Modal (5s) -->
+    <div class="confirm-timer-overlay" id="confirmTimerOverlay" aria-hidden="true"></div>
+    <section class="confirm-timer-modal" id="confirmTimerModal" aria-hidden="true" role="dialog" aria-modal="true"
+        aria-labelledby="confirmTimerTitle">
+
+        <div class="confirm-timer-card">
+            <div class="confirm-timer-head">
+                <h2 id="confirmTimerTitle">Confirm Action</h2>
+                <button type="button" class="confirm-timer-close" id="confirmTimerCancel"
+                    aria-label="Cancel confirmation">Cancel</button>
+            </div>
+
+            <div class="confirm-timer-body">
+                <p class="confirm-timer-sub" id="confirmTimerSub">This action will be sent in</p>
+
+                <div class="confirm-timer-visual" aria-hidden="true">
+                    <div class="confirm-timer-ring">
+                        <svg viewBox="0 0 120 120" class="confirm-timer-svg" aria-hidden="true">
+                            <circle class="ring-bg" cx="60" cy="60" r="48" />
+                            <circle class="ring-fg" id="confirmTimerRing" cx="60" cy="60" r="48" />
+                        </svg>
+                        <div class="confirm-timer-count" id="confirmTimerCount">5</div>
+                    </div>
+                </div>
+
+                <p class="confirm-timer-warn" id="confirmTimerWarn">Do not press Cancel if you need help immediately.
+                </p>
+            </div>
+
+            <div class="confirm-timer-actions">
+                <button type="button" class="confirm-timer-cancel-btn" id="confirmTimerCancel2">Cancel</button>
+            </div>
+        </div>
+    </section>
+
     <section class="live-map-panel" id="liveMapPanel" aria-hidden="true">
+
+
         <div class="live-map-top">
+
             <div>
                 <p class="map-eyebrow">Live View</p>
                 <h2>Exact Location</h2>
@@ -34,7 +77,7 @@
         </div>
         <p class="live-map-copy" id="liveMapStatus">Fetching your exact location inside SHAKTHI.</p>
         <div class="map-frame-shell">
-            <iframe id="liveMapFrame" title="Live location map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div id="liveMapContainer" style="width:100%;height:100%;"></div>
         </div>
     </section>
 
@@ -76,24 +119,124 @@
             </div>
         </div>
 
+        <div class="profile-tabs" role="tablist" aria-label="Profile tabs">
+            <button type="button" class="profile-tab active" id="profileTabAlerts" role="tab" aria-selected="true"
+                aria-controls="profileAlertsPanel">Alerts</button>
+            <button type="button" class="profile-tab" id="profileTabReviews" role="tab" aria-selected="false"
+                aria-controls="profileReviewsPanel">My Reviews</button>
+        </div>
+
+        <div class="profile-tab-panels">
+            <div class="profile-tab-panel active" id="profileAlertsPanel" role="tabpanel"
+                aria-labelledby="profileTabAlerts">
+                <div class="profile-list" id="profileAlertsList">
+                    <div class="profile-panel-empty">Loading alerts...</div>
+                </div>
+            </div>
+            <div class="profile-tab-panel" id="profileReviewsPanel" role="tabpanel" aria-labelledby="profileTabReviews">
+                <div class="profile-list" id="profileReviewsList">
+                    <div class="profile-panel-empty">Loading your reviews...</div>
+                </div>
+            </div>
+        </div>
+
         <button class="profile-logout" id="logoutBtn" type="button">Logout</button>
     </aside>
 
     <nav>
-        <button class="nav-btn" type="button" id="menuBtn" aria-label="Open profile menu">
-            <img src="../assets/open-menu.png" alt="Menu">
-        </button>
+        <div class="nav-group">
+            <button class="nav-btn" type="button" id="menuBtn" aria-label="Open profile menu">
+                <img src="../assets/open-menu.png" alt="Menu">
+            </button>
+        </div>
         <div class="name">
             <p>Safety Dashboard</p>
             <h1>SHAKTHI</h1>
         </div>
-        <button class="nav-btn" type="button" id="info" aria-label="Information">
-            <img src="../assets/info.png" alt="Info">
-        </button>
+        <div class="nav-group">
+            <button class="nav-btn nav-shortcut-btn" type="button" id="addShortcutBtn" aria-label="Add shortcut">+</button>
+            <button class="nav-btn" type="button" id="info" aria-label="Information">
+                <img src="../assets/info.png" alt="Info">
+            </button>
+        </div>
     </nav>
 
     <main class="page-shell">
         <div class="content">
+
+            <!-- Public Review Panel -->
+            <section class="public-review-panel" id="publicReviewPanel" aria-hidden="true">
+                <div class="public-review-head">
+                    <div>
+                        <p class="map-eyebrow">Public Review</p>
+                        <h2>Safety feedback from users</h2>
+                    </div>
+                    <button type="button" class="close-live-map" id="closePublicReview"
+                        aria-label="Close public review">&times;</button>
+                </div>
+
+                <div class="public-review-tabs" role="tablist" aria-label="Public Review tabs">
+                    <button type="button" class="pub-tab active" id="pubTabCreate" role="tab" aria-selected="true"
+                        aria-controls="pubCreatePanel">Create Review</button>
+                    <button type="button" class="pub-tab" id="pubTabFeed" role="tab" aria-selected="false"
+                        aria-controls="pubFeedPanel">Public Review</button>
+                </div>
+
+                <div class="public-review-body">
+                    <div class="pub-tab-panel active" id="pubCreatePanel" role="tabpanel"
+                        aria-labelledby="pubTabCreate">
+                        <p class="pub-sub">Tap a spot on the map to drop a pin, then choose Safe / Not Safe and add your
+                            comment.</p>
+
+                        <div class="pub-map-shell">
+                            <div id="pubMapContainer" aria-label="Create review map"></div>
+                        </div>
+
+                        <div class="pub-pin-summary" id="pubPinSummary" aria-live="polite">No place selected.</div>
+
+                        <div class="pub-form">
+                            <label class="pub-field">
+                                <span>Place name</span>
+                                <input id="pubPlaceName" type="text" placeholder="Enter place name" maxlength="80" />
+                            </label>
+
+                            <div class="pub-safety-row" role="group" aria-label="Safety status">
+                                <button type="button" class="pub-safety-btn" id="pubSafeBtn" data-status="safe"
+                                    aria-pressed="false">Safe</button>
+                                <button type="button" class="pub-safety-btn" id="pubNotSafeBtn" data-status="not_safe"
+                                    aria-pressed="false">Not Safe</button>
+                            </div>
+
+                            <label class="pub-field">
+                                <span>Comment (optional)</span>
+                                <textarea id="pubComment" rows="3" placeholder="Share why you marked this place..."
+                                    maxlength="240"></textarea>
+                            </label>
+
+                            <div class="pub-submit-row">
+                                <button type="button" class="pub-submit" id="pubSubmitBtn">Submit Review</button>
+                                <button type="button" class="pub-cancel-edit" id="pubCancelEditBtn"
+                                    style="display:none">Cancel</button>
+                            </div>
+                            <p class="pub-note" id="pubSubmitStatus" aria-live="polite">Your review will be visible to
+                                all users.</p>
+                        </div>
+                    </div>
+
+                    <div class="pub-tab-panel" id="pubFeedPanel" role="tabpanel" aria-labelledby="pubTabFeed">
+                        <div class="pub-feed-head">
+                            <p class="pub-sub">Latest reviews from all users</p>
+                        </div>
+                        <div class="pub-map-shell pub-feed-map-shell">
+                            <div id="pubFeedMapContainer" aria-label="Public review map"></div>
+                        </div>
+                        <div class="pub-feed-list" id="pubFeedList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="public-review-overlay" id="publicReviewOverlay" aria-hidden="true"></div>
+
             <section class="box">
                 <span class="eyebrow">Safety in Every Step</span>
 
@@ -129,19 +272,56 @@
                         <img src="../assets/call.png" alt="Call">
                         <span>Call</span>
                     </button>
+
+                </div>
+                <br>
+
+                <div class="section-head">
+
+                    <div>
+                        <h4>Persnol safety</h4>
+                        <p>Stay protected with Shakthi</p>
+                    </div>
+
+                </div>
+                <div class="tmain">
+
                     <button class="tool" id="liveMapTool" type="button">
                         <img src="../assets/location.png" alt="Live Map">
                         <span>Live Map</span>
                     </button>
-                    <div class="tool empty">
-                        <span>Safe Route</span>
-                    </div>
+                    <button class="tool" id="publicReviewBtn" type="button" aria-label="Public review">
+                        <img src="../assets/customer-review.png" alt="Public Review">
+                        <span>Public Review</span>
+                    </button>
+                    <button class="tool" id="policeBtn" type="button" aria-label="Nearby police station">
+                        <img src="../assets/call.png" alt="Police">
+                        <span>Police</span>
+                    </button>
                     <div class="tool empty">
                         <span>Guardians</span>
                     </div>
-                    <div class="tool empty">
-                        <span>Police</span>
-                    </div>
+
+
+                    <section class="police-info" id="policeInfoPanel" aria-hidden="true">
+                        <div class="police-info-head">
+                            <h3 id="policeInfoTitle">Nearby Police</h3>
+                            <button class="close-live-map" id="closePoliceInfo" type="button"
+                                aria-label="Close police info">&times;</button>
+                        </div>
+                        <p class="police-info-sub" id="policeInfoSub">Fetching police details...</p>
+                        <div class="police-list" id="policeStationList" aria-live="polite"></div>
+                        <div class="police-info-actions">
+                            <button class="tool" type="button" id="policeCallBtn">
+                                <img src="../assets/call.png" alt="Call">
+                                <span>Call</span>
+                            </button>
+                            <button class="tool" type="button" id="policeSeeLocationBtn">
+                                <img src="../assets/location.png" alt="See Location">
+                                <span>See Location</span>
+                            </button>
+                        </div>
+                    </section>
                 </div>
             </section>
 
@@ -161,15 +341,20 @@
     </main>
 
     <button class="reel shortcut-panel" id="emergencyShortcut" type="button">
+
         <div>
+
             <strong>Emergency panel ready</strong>
             <p>Tap here to jump to your shortcuts</p>
         </div>
         <img src="../assets/content.png" alt="Content">
     </button>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="./script.js"></script>
+
     <script>
+
         if ("serviceWorker" in navigator) {
             navigator.serviceWorker.register("/sw.js").catch((error) => {
                 console.warn("Service worker registration failed:", error.message);

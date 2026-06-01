@@ -6,6 +6,7 @@ self.addEventListener("activate", (event) => {
     event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", () => {
-    return;
-});
+// Remove no-op fetch handler to avoid overhead during navigation
+// self.addEventListener("fetch", () => {
+//     return;
+// });
