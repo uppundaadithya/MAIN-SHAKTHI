@@ -32,6 +32,7 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     scrollbar-width: thin;
+    user-select: none;
     scrollbar-color: transparent transparent;
 }
 
