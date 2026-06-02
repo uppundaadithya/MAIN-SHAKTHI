@@ -64,6 +64,89 @@ function setText(id, value) {
     if (element) element.textContent = value;
 }
 
+function requestLocationPermissionOnOpen() {
+    if (!("geolocation" in navigator)) {
+        return;
+    }
+
+    const promptMessage = "Please allow location access when the browser asks.";
+    const deniedMessage = "Allow location access to use emergency features.";
+
+    const permissionOverlay = document.getElementById("locationPermissionOverlay");
+    const permissionModal = document.getElementById("locationPermissionModal");
+    const permissionCancel = document.getElementById("locationPermissionCancel");
+    const permissionAllow = document.getElementById("locationPermissionAllow");
+
+    function closePermissionPrompt() {
+        permissionModal?.classList.remove("active");
+        permissionOverlay?.classList.remove("active");
+        permissionModal?.setAttribute("aria-hidden", "true");
+        permissionOverlay?.setAttribute("aria-hidden", "true");
+    }
+
+    function openPermissionPrompt() {
+        permissionModal?.classList.add("active");
+        permissionOverlay?.classList.add("active");
+        permissionModal?.setAttribute("aria-hidden", "false");
+        permissionOverlay?.setAttribute("aria-hidden", "false");
+    }
+
+    function handleLocationSuccess() {
+        showToast("Location access enabled", "Emergency tools can use your current location.", "success");
+    }
+
+    function handleLocationError(error) {
+        const code = error?.code;
+        if (code === 1 || code === error.PERMISSION_DENIED) {
+            showToast("Location permission denied", deniedMessage, "warning");
+        } else {
+            showToast("Location unavailable", "Could not access your location.", "error");
+        }
+    }
+
+    async function requestLocation() {
+        closePermissionPrompt();
+        showToast("Requesting location", promptMessage, "info");
+        navigator.geolocation.getCurrentPosition(handleLocationSuccess, handleLocationError, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        });
+    }
+
+    function installButtonHandlers() {
+        permissionCancel?.addEventListener("click", closePermissionPrompt);
+        permissionOverlay?.addEventListener("click", closePermissionPrompt);
+        permissionAllow?.addEventListener("click", requestLocation);
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") closePermissionPrompt();
+        });
+    }
+
+    async function checkPermissionState() {
+        if (!("permissions" in navigator)) {
+            openPermissionPrompt();
+            return;
+        }
+
+        try {
+            const status = await navigator.permissions.query({ name: "geolocation" });
+            if (status.state === "granted") {
+                requestLocation();
+            } else if (status.state === "prompt") {
+                openPermissionPrompt();
+            } else {
+                showToast("Location blocked", deniedMessage, "warning");
+            }
+        } catch (err) {
+            openPermissionPrompt();
+        }
+    }
+
+    installButtonHandlers();
+    checkPermissionState();
+}
+
 function updateProfileUI(user) {
     const fullName = readValue(user.fullName, "Shakthi User");
     const email = readValue(user.email, "yourmail@example.com");
@@ -1531,6 +1614,7 @@ function initProfileTabs() {
 }
 
 initProfileTabs();
+requestLocationPermissionOnOpen();
 loadUserProfile().then(() => {
     if (profileAlertsPanel?.classList.contains("active")) {
         profileLoadAlerts();
